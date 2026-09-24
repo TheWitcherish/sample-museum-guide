@@ -1,0 +1,26 @@
+[project]
+name = "sample-museum-guide"
+version = "0.1.0"
+description = "The Curator: an agentic guide for a computing-heritage museum, built one gallery at a time. Workshop sample repo."
+readme = "README.md"
+# >=3.12 because Chapter 2's Nova Sonic bidi runtime dependency requires it (spec 10a rule 2).
+requires-python = ">=3.12"
+dependencies = [
+    # Deliberately unpinned, no lockfile: uv sync installs the latest compatible Strands releases
+    # (spec 10a rule 3). Add a floor ONLY where a specific API demands one, with a comment naming it.
+    "strands-agents",
+    "strands-agents-tools",  # community tools: Chapter 1 imports `calculator` from here
+    # The scoreboard: Case / Experiment / TrajectoryEvaluator. The correct distribution is
+    # `strands-agents-evals` (docs: strandsagents.com/docs/user-guide/evals-sdk/). The PyPI name
+    # `strands-evals` is a TYPOSQUAT (fake "data synchronization" backend) - never use that name.
+    "strands-agents-evals",
+    # "strands-agents[bidi]>=1.44",  # Chapter 2 (voice) will add this floor per R17 - not needed for Ch1
+]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+
+[tool.mypy]
+python_version = "3.12"
+strict = true

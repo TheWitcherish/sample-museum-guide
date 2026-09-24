@@ -1,0 +1,32 @@
+{
+  "museum": "The Curator — a computing-heritage museum",
+  "exhibits": [
+    {
+      "id": "jacquard-loom",
+      "name": "Jacquard Loom",
+      "year": 1804,
+      "era": "1804-1885",
+      "gallery": "When Computers Were People",
+      "summary": "A loom that takes its pattern from a chain of punched cards: same cards, same cloth, every time. The ancestor of the stored program.",
+      "facts": {}
+    },
+    {
+      "id": "comptometer",
+      "name": "Felt Comptometer",
+      "year": 1887,
+      "era": "1804-1885",
+      "gallery": "When Computers Were People",
+      "summary": "Dorr E. Felt's key-driven mechanical calculator: prototype 1885, first practical machine 1886, patents 1887. The first commercially successful key-driven calculator, in production into the mid-1970s.",
+      "facts": {"patent_year": 1887}
+    },
+    {
+      "id": "witch",
+      "name": "WITCH (Harwell Dekatron)",
+      "year": 1951,
+      "era": "1948-1951",
+      "gallery": "When Computers Were People",
+      "summary": "The Harwell Dekatron computer, operational from 1951. It stores numbers in dekatron counting tubes and holds the record for the most hours of unattended operation for a working computer.",
+      "facts": {"operational_year": 1951, "dekatron_count": 828}
+    }
+  ]
+}
