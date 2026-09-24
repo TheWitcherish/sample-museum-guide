@@ -1,11 +1,12 @@
 ---
 title: "Once Upon a Machine: From Analog Gears to Agentic in Python"
 date: 2026-07-28
-revised: 2026-08-04
+revised: 2026-09-24
 owner: TheWitcherish
 status: Design approved (see §1a)
 artifact: Livestream series (6 chapters, 7 streams) that accretes into an AWS Workshop
-stack: Python 3.12+ · uv · Strands Agents SDK · Strands Evals SDK · Amazon Bedrock
+stack: Python 3.12+ · uv · Strands Agents SDK (strands-agents 1.57.0) · strands-agents-tools 0.8.9 · Strands Evals SDK (strands-agents-evals 1.4.0) · Amazon Bedrock
+api_verified: 2026-09-24 against installed packages and strandsagents.com docs
 ---
 
 # Once Upon a Machine: From Analog Gears to Agentic in Python
@@ -58,7 +59,7 @@ streams.** Recording the four decisions and their reasoning so this is settled.
 The removal was tested against the **2026-07-28 MCP revision** before deciding. Two findings, in
 order of force:
 
-**1. The stack cannot reach it.** Verified 2026-08-04 against PyPI:
+**1. The stack could not reach it — no longer true.** Verified 2026-08-04 against PyPI:
 
 | Fact | Value |
 |---|---|
@@ -66,8 +67,9 @@ order of force:
 | `strands-agents` 1.50.2 dependency constraint | **`mcp<2.0.0,>=1.23.0`** |
 | Latest protocol version declared by `mcp` 1.29.0 | **`2025-11-25`** (read from the sdist's `types.py`) |
 
-Strands cannot install the SDK that speaks the new specification. A chapter teaching 2026-07-28
-through Strands is not currently buildable, so the question decides itself.
+**Re-verified 2026-09-24:** `strands-agents` 1.57.0 declares **`mcp<2.2,>=1.23.0`**, so Strands can
+now install an SDK that speaks the 2026-07-28 revision. This finding no longer supports the removal.
+**The decision stands on finding 2 alone**, which is unchanged.
 
 **2. The revision would not have rescued the chapter anyway.** Its major changes are transport
 and lifecycle plumbing — protocol-level sessions and `Mcp-Session-Id` removed, the
@@ -160,7 +162,7 @@ that era is decoration and the chapter needs fixing.
 **Three rows, not four — and the merge is what makes Chapter 2 one concept.** Gears and sound were
 separate chapters when they were separate ideas. They are the same idea: *a continuously varying
 quantity reaching a machine that can only take discrete samples of it.* The integrator's `steps`
-parameter and Nova Sonic's `input_rate` are the same decision, forty years apart. One chapter, one
+parameter and Nova Sonic's `sample_rate` are the same decision, forty years apart. One chapter, one
 sentence, and §5b's Rule 1 is satisfied rather than strained.
 
 **The arc's endpoint is not a medium — it is a property.** Chapters 4, 5 and 6 do not digitise
@@ -325,12 +327,12 @@ check.** The API surface grows one concept at a time, which is also how it stays
 
 | Ch | The new kind of check it adds | Why that kind belongs there |
 |---|---|---|
-| **1** | **Deterministic trajectory assertion.** `Case` + `Experiment` + `TrajectoryEvaluator` with `in_order_match_scorer`: *was `find_exhibit` actually called?* Three lines of eval code | It is **binary** — no judge model, no rubric, no flake. And it proves the chapter's own lesson mechanically: red while the Curator fabricates, green the moment the tool is wired |
+| **1** | **Deterministic trajectory assertion.** `Case` + `Experiment` + the deterministic `ToolCalled` evaluator: *was `find_exhibit` actually called?* Three lines of eval code | It is **binary** — no judge model, no rubric, no flake. And it proves the chapter's own lesson mechanically: red while the Curator fabricates, green the moment the tool is wired |
 | **2** | **A threshold on a number.** Same `Case` objects, one added latency assertion: *did the answer arrive inside the visitor's patience?* | The API is already known, so the new material is a *dimension*, not a mechanism. Voice is where latency becomes correctness, so the threshold has a reason to exist |
 | **3** | **The first judge model.** `OutputEvaluator(rubric=…, model=…)`, plus an image-grounded rubric for the scan | *"Did it transcribe this page correctly?"* is not binary, so this is where a judge is genuinely required rather than merely available. The contrast with Chapter 1's deterministic assertion is the lesson: **use a judge only when you cannot write an assertion** |
-| **4** | **Depth, not a new primitive.** Traces and `HelpfulnessEvaluator`, `ActorSimulator` for multi-turn visitors, chaos/fault injection, `diagnose`, and `--fail-on` as a CI gate | By now three chapters of cases exist and the participant wants them to run automatically, on every change, with a root cause when they break. Evaluation stops being a script and becomes an engineering discipline |
+| **4** | **Depth, not a new primitive.** Traces and `HelpfulnessEvaluator`, `ActorSimulator` for multi-turn visitors, chaos/fault injection, `diagnose_session`, and `--fail-on` as a CI gate | By now three chapters of cases exist and the participant wants them to run automatically, on every change, with a root cause when they break. Evaluation stops being a script and becomes an engineering discipline |
 | **5** | **Formal proof.** Cases where the Curator is *provably* wrong — a class of check neither an assertion nor a judge can express | Requires Automated Reasoning, which is Chapter 5's subject |
-| **6** | **Adversarial.** Red-team strategies (Crescendo, GOAT, PAIR, BadLikertJudge, SequentialBreak) run against the Guardrails boundary | A boundary is only real if it survives attack, and you cannot attack a boundary that does not exist yet |
+| **6** | **Adversarial.** Red-team strategies (Crescendo, GOAT, PAIR, BadLikertJudge, SequentialBreak — `strands_evals.experimental.redteam`) run against the Guardrails boundary | A boundary is only real if it survives attack, and you cannot attack a boundary that does not exist yet |
 
 **Deterministic first, judged later, and that ordering is deliberate.** Chapter 1's assertion cannot
 flake, which matters enormously for a graded game in week one (R13). A participant whose correct
@@ -465,7 +467,7 @@ flat titles. Corrected here.
 | 1 | 🧮 **Chapter 1: When Computers Were People** — Your First Agent, Its Tools, and Choosing a Model | `1_first_agent_and_tools/` | Strands `Agent`, custom `@tool`, `strands_tools`, Bedrock model swap, first `Case` |
 | 2 | 🎙️ **Chapter 2: The Wheel and the Wave** — Talking to the Curator | `2_voice_agent/` | Nova 2 Sonic, `BidiAgent`, `FileSessionManager`, latency thresholds |
 | 3 | ✍️ **Chapter 3: What the Hand Wrote** — Reading the Archive | `3_multimodal_and_schemas/` | Converse image blocks, Structured Output, retry on `ValidationError`, first judge |
-| 4 | ⏱️ **Chapter 4: Eighty Hours Unattended** — Trusting What You Built | `4_evaluation_at_scale/` | Traces, `ActorSimulator`, chaos, `diagnose`, `--fail-on` CI gate |
+| 4 | ⏱️ **Chapter 4: Eighty Hours Unattended** — Trusting What You Built | `4_evaluation_at_scale/` | Traces, `ActorSimulator`, chaos, `diagnose_session`, `--fail-on` CI gate |
 | 5 | ⚖️ **Chapter 5: Prove It** — When Judgement Is Not Enough | `5_automated_reasoning/` | Automated Reasoning checks, formal policy, rewriting loop |
 | 6 | 🎟️ **Chapter 6: Opening Day** — Holding the Line in Public | `6_guardrails_and_launch/` | Guardrails, streaming UI, red-team evaluators, cost per session |
 | — | 🧹 **Resource cleanup** | *none* | Delete guardrails, AR policies, and any deployed surface |
@@ -567,7 +569,7 @@ the judgement call: nobody ships a tool that knows your museum's catalog, and no
 writing their own `add`.
 
 **`find_exhibit` is the tool the rest of the series carries forward.** It is what this chapter's own
-`TrajectoryEvaluator` asserts was actually called, what Chapter 2 makes speakable, what Chapter 4's
+`ToolCalled` check asserts was actually called, what Chapter 2 makes speakable, what Chapter 4's
 simulated visitors reach for in conversations nobody wrote, and what Chapter 5's policy proves the
 Curator described correctly. Naming it here and never renaming it is what makes the carried-forward
 code — and the carried-forward *cases* — legible in every later folder.
@@ -579,22 +581,29 @@ lines — and asserts it mechanically:
 
 ```python
 from strands_evals import Case, Experiment
-from strands_evals.evaluators import TrajectoryEvaluator
-from strands_evals.scorers import in_order_match_scorer
+from strands_evals.evaluators import ToolCalled
 
 case = Case(
     name="dekatron_count_uses_the_catalog",
     input="How many dekatrons does the WITCH have?",
-    expected_tools=["find_exhibit"],
+    expected_trajectory=["find_exhibit"],
 )
+experiment = Experiment(cases=[case], evaluators=[ToolCalled(tool_name="find_exhibit")])
 ```
+
+`experiment.run_evaluations(task)` runs it, where `task` takes a `Case`, calls the Curator, and
+returns `{"output": ..., "trajectory": [tool names]}`. The report's `test_passes` is the scoreboard.
+Verified 2026-09-24 against `strands-agents-evals` 1.4.0: the older `expected_tools` field, the
+`strands_evals.scorers` module, and `in_order_match_scorer` no longer exist, and
+`TrajectoryEvaluator` now takes a rubric and a judge model — the wrong tool for a judge-free week one.
 
 Run it against the Curator *before* the tool exists: **red.** Wire `find_exhibit`: **green.** No
 judge model, no rubric, no flake — the check is binary, which is exactly what week one needs
 (R13). The scoreboard's first act is to prove the chapter's own lesson.
 
 *Layer three — the instrument that reasons, chosen by score.* Now the model swap, and it is not a
-tour. The **same `Experiment` runs against all three Bedrock model IDs** and prints three reports:
+tour. The **same cases run once per Bedrock model ID** — `Experiment` takes no model argument, so
+the model lives in the `task` function, one run each — and print three reports:
 pass rate, tokens, latency. The participant chooses a model by reading evidence, which is how the
 decision is actually made in production — and it is what `Experiment` exists for.
 
@@ -628,7 +637,7 @@ next week unexplained.**
 
 **Why the Evals SDK belongs in episode one, not episode four.** Three reasons, and the first is the
 one that matters most on stream: a viewer who sees an unexplained red bar and is told to wait a month
-does not come back. The second is that `TrajectoryEvaluator` is the *simplest* thing in the SDK —
+does not come back. The second is that `ToolCalled` is the *simplest* thing in the SDK —
 three lines, no judge, no rubric — so it costs almost nothing to teach here. The third is that the
 model swap needs it: without a scoreboard, "which model should I ship?" is a vibe.
 
@@ -678,18 +687,23 @@ WebSocket state machine — and **Chapter 1's tool drops into the constructor un
 
 ```python
 from strands.experimental.bidi import BidiAgent
-from strands.experimental.bidi.io import BidiAudioIO, BidiTextIO
-from strands.experimental.bidi.models import BidiNovaSonicModel
+from strands.experimental.bidi.io import AudioIO, ConsoleIO
+from strands.experimental.bidi.models import BedrockNovaSonicModel
 from strands_tools import stop
 
-model = BidiNovaSonicModel(
+model = BedrockNovaSonicModel(
+    region="us-west-2",
+    voice="tiffany",
     model_id="amazon.nova-2-sonic-v1:0",
-    provider_config={"audio": {"voice": "tiffany"}},
-    client_config={"region": "us-west-2"},
 )
 agent = BidiAgent(model=model, tools=[find_exhibit, stop])
-await agent.run(inputs=[audio_io.input()], outputs=[audio_io.output(), text_io.output()])
+await agent.run(inputs=[audio_io.input()], outputs=[audio_io.output(), console_io.output()])
 ```
+
+Verified 2026-09-24 against `strands-agents` 1.57.0: the earlier `BidiNovaSonicModel`,
+`provider_config`/`client_config`, and `BidiAudioIO`/`BidiTextIO` names are gone. `stop` is still
+the recommended way to end a bidi session (the SDK's own `stop_conversation` is deprecated in its
+favour).
 
 `stop` is the second community tool of the series and it is there for a reason a text agent never
 needs: a spoken conversation has no Ctrl-C. It is how the visitor ends the session by saying so,
@@ -699,7 +713,7 @@ obvious.
 Which makes this line, in the audio configuration, the most quietly loaded line in the workshop:
 
 ```python
-"input_rate": 16000
+audio={"input": {"sample_rate": 16000}}
 ```
 
 That is the sampling theorem, in a config file, typed by developers who have never been told whose
@@ -724,8 +738,9 @@ request-response. Voice is none of those things:
   `strands.session.FileSessionManager` so a reconnected session resumes the visit instead of
   restarting it. This earns its place the same way Chapter 6's Guardrails do: the building demands
   it.
-- **Local versus server-side I/O.** `BidiAudioIO` uses PyAudio for a laptop microphone;
-  browser and mobile clients need custom `BidiInput`/`BidiOutput` handlers. That distinction is
+- **Local versus server-side I/O.** `AudioIO` uses PyAudio for a laptop microphone;
+  browser and mobile clients need custom handlers implementing the `InputStream`/`OutputStream`
+  protocols. That distinction is
   the difference between a demo and a deployment.
 
 **Reuse, not new surface.** Chapter 1's custom tool and community tools become *speakable* with no
@@ -753,10 +768,14 @@ kind of assertion they will ever need: a **number with a limit on it**.
 case = Case(
     name="opening_hours_answered_within_1200ms",
     input="What time do you close?",
-    expected_tools=["find_exhibit"],
+    expected_trajectory=["find_exhibit"],
 )
-# The threshold lives in the scorer, not the prompt: latency_under(1200)
+# The threshold lives in the evaluator, not the prompt: LatencyUnder(1200)
 ```
+
+The SDK ships no latency evaluator (verified 2026-09-24, `strands-agents-evals` 1.4.0), so
+`LatencyUnder` is a ~10-line subclass of `strands_evals.evaluators.Evaluator` that returns an
+`EvaluationOutput(score, test_pass, reason)` — still deterministic, still no judge.
 
 **It goes red on the first run, and that is the script.** The naive implementation answers correctly
 and arrives late, because the tool call is awaited before any audio is emitted. The participant
@@ -804,7 +823,9 @@ organisations today.
 **Engineering.** Two features that are really one loop here.
 
 Bedrock Converse with image blocks turns a photographed handwritten page into text. **Strands
-Structured Output** then constrains the agent's response to a Pydantic model, so the page
+Structured Output** then constrains the agent's response to a Pydantic model
+(`agent(prompt, structured_output_model=PageTranscription)`, read from `result.structured_output`;
+the older `agent.structured_output()` method is deprecated), so the page
 arrives as a typed object rather than prose to be parsed. And because the two are combined,
 **validation failure becomes the retry trigger**: ambiguous handwriting fails the schema, and
 that failure — with its field-level detail — is what gets fed back on retry.
@@ -913,7 +934,7 @@ hours.** Reliability was the headline metric of early computing, and somewhere a
 stopped asking that of our systems. This gallery asks it again.
 
 **Engineering — depth, not a new primitive.** The scoreboard has been green since week one. Sixteen
-cases exist and the participant wrote every one. `strands-agents-evals` (v1.0.3, imports as
+cases exist and the participant wrote every one. `strands-agents-evals` (1.4.0 as of 2026-09-24, imports as
 `strands_evals`) now stops being *three imports they use* and becomes *a harness they own*.
 
 **The chapter opens on the honest limit of what they have.** *"Sixteen cases, all green. Now answer
@@ -929,7 +950,7 @@ spots. Everything below attacks that.
 | `ActorSimulator` | Ch 2 voice, Ch 1 catalog | Conversations **nobody wrote** — a goal-driven simulated visitor generates turns the participant never thought to test, replayed as transcripts so voice runs in CI with no microphone |
 | Trace-based evaluation + `HelpfulnessEvaluator` | all galleries | Grading a **real session** from its OpenTelemetry spans, not a synthetic input. `StrandsEvalsTelemetry().setup_in_memory_exporter()` + `StrandsInMemorySessionMapper` |
 | Chaos testing (fault injection via plugin hooks) | Ch 2 voice path | **A slow tool stalls a conversation.** All sixteen cases pass on a healthy day; this asks what happens on a bad one |
-| `diagnose` / root-cause analysis | the reds they already know | A failing session JSON yields a *cause*, not just a verdict — the difference between "case 7 is red" and "case 7 is red because the retry never fired" |
+| `diagnose_session` (`strands_evals.detectors.diagnosis`) / root-cause analysis | the reds they already know | A failing session JSON yields a *cause*, not just a verdict — the difference between "case 7 is red" and "case 7 is red because the retry never fired" |
 | `--fail-on` exit codes | CI | The scoreboard stops being something the participant runs and becomes something that **runs without them** — the WITCH property, in CI |
 | `Experiment` at scale | the full golden set | Suite-level reporting, per-case drill-down, and a run history you can compare against last week's |
 
@@ -1153,7 +1174,7 @@ Three real problems arrive with the voice path, and they are the strongest 400-l
 3. **The failure mode is architectural.** A developer who assumes "Guardrails is attached, so we
    are covered" ships an unguarded voice product. The assumption is the bug.
 
-**Spike required** to confirm whether `BidiNovaSonicModel` exposes guardrail configuration directly
+**Spike required** to confirm whether `BedrockNovaSonicModel` exposes guardrail configuration directly
 or whether the workshop must call `ApplyGuardrail` on transcript events by hand.
 
 **Why the Guardrails / red-team pairing matters.** Guardrails is the control; red-team evaluation
@@ -1179,7 +1200,7 @@ certifies when the refusal survives all five.
 **Then the last run of the series, and it is the argument in one command.** The participant changes
 the Curator's system prompt — a small, reasonable, well-intentioned edit — and runs the full suite.
 **A case they wrote in week one goes red.** Roughly thirty cases, six galleries, six classes of
-failure, and the one that catches the regression is three lines of `TrajectoryEvaluator` written
+failure, and the one that catches the regression is three lines of `ToolCalled` written
 before they knew what an evaluator was.
 
 That is the added value of evaluation for agentic workloads, demonstrated rather than asserted, and
@@ -1215,7 +1236,7 @@ suite*, and each chapter adds exactly one new kind of check:
 
 | Ch | New check introduced | Assertion kind | Needs a model? |
 |---|---|---|---|
-| 1 | `TrajectoryEvaluator` + `in_order_match_scorer` | the right tool ran | no |
+| 1 | `ToolCalled(tool_name="find_exhibit")` | the right tool ran | no |
 | 2 | latency threshold | it ran fast enough | no |
 | 3 | `OutputEvaluator(rubric=…, model=…)` | it was true | yes — and the judge is audited first |
 | 4 | `ActorSimulator`, traces, chaos, `--fail-on` | **no new kind** — depth: inputs nobody wrote, run unattended | mixed |
@@ -1252,24 +1273,24 @@ R32 for the accepted cost. **Prompt caching** remains a Go Deeper link only.
 | R32 | **The workshop no longer teaches MCP**, the industry-standard tool protocol, and participants will expect it | Named up front in the README and in Chapter 1's Go Deeper: *"this series does not cover MCP, and here is where to learn it."* Points at *Once Upon Agentic AI*'s MCP chapter — the same content R4 warned we were duplicating. Re-evaluate when `strands-agents` relaxes `mcp<2.0.0`; a 2026-07-28 chapter may be worth authoring then, and it would be a genuinely new one |
 | R30 | **The level ladder dips** at Chapter 3 (300) after Chapter 2 (300→400) | Accepted and named on air as the breather episode. A dip after a peak is fine for retention; an unwarned spike is not. Do **not** inflate Chapter 3's scope to smooth the curve — that would break Rule 1 |
 | R5 | **The Evals SDK chapter is oversized for one stream** — even after the basics moved to Chapters 1–3, Chapter 4 still carries simulation, traces, chaos, diagnosis and CI | Reduced but still live (was Ch 5, now Ch 4, and lighter since `Case`/`Experiment`/`OutputEvaluator` are already known). Planned as **two streams, 4a and 4b**, split at §6's stated line: 4a is *inputs you did not author*, 4b is *running unattended*. If 4a still overruns, `HelpfulnessEvaluator` moves to 4b — it is the one piece with no dependency on the simulator narrative |
-| R6 | Strands core Structured Output and metrics shape are unverified | **Spike required before authoring** — metrics shape blocks Ch 1, Structured Output blocks Ch 3 |
-| R7 | Strands Evals is v1.0.3 (July 2026) and may churn | **Not solved by pinning** — the OUAA pattern (§10a) mandates unpinned dependencies and no lockfile, and there is a single rolling `solution` branch rather than versioned snapshots. So the mitigation is **maintenance, not freezing**: (1) confine the taught API surface to the stable core, per R14; (2) `solution` is the canary — run its certification suites before every stream, so a breaking release surfaces there first; (3) use a version **floor with an explanatory comment** where a specific API demands one, exactly as OUAA does; (4) state the SDK version on air and in the README so a viewer of an older recording knows what it was built against. **Accepted consequence:** an old recording may not match current `main`. That is the cost of a living workshop, and the README says so |
+| R6 | Strands core Structured Output and metrics shape | **Resolved 2026-09-24** against `strands-agents` 1.57.0: metrics are `result.metrics` (`cycle_count`, `cycle_durations`, `accumulated_usage["totalTokens"]`, `accumulated_metrics["latencyMs"]`); Structured Output is `agent(prompt, structured_output_model=Model)` read from `result.structured_output` — `agent.structured_output()` is deprecated and MUST NOT be taught |
+| R7 | Strands Evals is 1.4.0 (September 2026; was 1.0.3 in July) and churns — the Ch 1 API itself changed between them | **Not solved by pinning** — the OUAA pattern (§10a) mandates unpinned dependencies and no lockfile, and there is a single rolling `solution` branch rather than versioned snapshots. So the mitigation is **maintenance, not freezing**: (1) confine the taught API surface to the stable core, per R14; (2) `solution` is the canary — run its certification suites before every stream, so a breaking release surfaces there first; (3) use a version **floor with an explanatory comment** where a specific API demands one, exactly as OUAA does; (4) state the SDK version on air and in the README so a viewer of an older recording knows what it was built against. **Accepted consequence:** an old recording may not match current `main`. That is the cost of a living workshop, and the README says so |
 | R8 | Live latency numbers are noisy on stream | Lead with token counts; treat wall-clock as indicative |
 | R13 | Certification runs are LLM-judged, so a correct solution could fail intermittently — unacceptable in a graded game, and now the game starts in episode one | **Strengthened by ordering (2026-08-04).** Chapters 1 and 2 use only deterministic assertions — a tool-name set comparison and a millisecond threshold. Neither can flake. The first judge model does not appear until **Chapter 3**, by which point the participant has seen the scoreboard be right twice and has a baseline for trusting it. The judge is also *audited before it is trusted* (§6 Ch 3): run it against a known-correct page first. Standing rules unchanged — rubric thresholds set tolerantly, judged scores advisory, structural checks binding |
 | R25 | Chapter 4's golden set cannot import cases from earlier chapters — and the CLI gate needs an `experiment.json` nothing authors | **Dissolved by the §10a layout.** Under the *Once Upon Agentic AI* convention chapters never import from each other: each has its own `cases.py`, and Chapter 4 gets earlier cases **copied forward** into its folder. Simpler now than before, because the participant *authors* galleries 1–3's cases in Chapter 4 rather than inheriting them. What survives: asset paths resolve via `Path(__file__).parent`, never the caller's cwd; and `export_experiment.py` still generates `experiment.json` for the CLI gate, with a plain-Python gate as fallback |
 | R29 | Copying code forward into every chapter folder means the same file exists in several places, so a fix applied in one chapter does not propagate | Accepted deliberately — it is what makes each folder a runnable snapshot and lets latecomers start anywhere. Mitigations: `solution` is the single reference implementation and its files retain their `# TODO:` comments; `preflight.py` (deliverable 10) diffs the carried-forward files against it so silent drift is caught; and the duplication is **named on air** so it does not read as sloppiness |
 | R26 | `strands-agents-tools` is a separate distribution whose package and import names differ (`strands_tools`), and it is now a **Chapter 1** dependency rather than a late one | **Resolved by declaration, not pinning** (§10a forbids pins): list `strands-agents-tools` in the root `pyproject.toml` alongside `strands-agents`, and keep an import probe in `preflight.py` (deliverable 10) — `from strands_tools import calculator, stop` must resolve before Stream 1. The risk rose in severity by moving to Chapter 1: a broken import now blocks the first episode, not the sixth |
 | R27 | Model IDs written into content go stale fast — the original Sonnet 4.6 baseline became legacy within weeks | Re-baselined to the Claude 5 family, verified ACTIVE in `us-west-2`. **`preflight.py` (deliverable 10) re-verifies every written model ID against the live account before each stream** — this row previously pointed at "Task 0," a step defined only in the superseded plan documents, which is a dead reference the 2026-08-04 orphan audit caught (§13); treat every written ID as perishable |
-| R14 | Every chapter depends on `strands-agents-evals` from Chapter 1 — and now it is *taught* from Chapter 1 too, so a breaking release breaks the first episode | Do **not** pin (§10a). Instead: (1) the API surface taught in Chapters 1–3 is deliberately the **smallest and most stable** in the SDK — `Case`, `Experiment`, `TrajectoryEvaluator`, `in_order_match_scorer`, `OutputEvaluator` — while trace/chaos/simulator/red-team APIs stay in the churn-prone tier from Chapter 4 onward; (2) `certify.py` is a thin runner carried into every folder, so a break is a one-file fix repeated mechanically; (3) the import probe in `preflight.py` covers `strands_evals` before Stream 1, alongside `strands_tools` (R26); (4) fix forward on the rolling `solution` branch, then carry the fix into each affected chapter folder |
+| R14 | Every chapter depends on `strands-agents-evals` from Chapter 1 — and now it is *taught* from Chapter 1 too, so a breaking release breaks the first episode | Do **not** pin (§10a). Instead: (1) the API surface taught in Chapters 1–3 is deliberately the **smallest and most stable** in the SDK — `Case`, `Experiment`, `ToolCalled`, `OutputEvaluator` — while trace/chaos/simulator/red-team APIs stay in the churn-prone tier from Chapter 4 onward; (2) `certify.py` is a thin runner carried into every folder, so a break is a one-file fix repeated mechanically; (3) the import probe in `preflight.py` covers `strands_evals` before Stream 1, alongside `strands_tools` (R26) — and the dependency MUST be named `strands-agents-evals`: the PyPI name **`strands-evals` is a typosquat** (a fake "data synchronization" package, found 2026-09-24) that a participant typing the import name would install; (4) fix forward on the rolling `solution` branch, then carry the fix into each affected chapter folder |
 | R15 | **Chapter 1 overload** — the agent, a custom tool, the community tools package, the three-model swap, *and* now the scoreboard | The five serve one sentence (§5b Rule 1) and one motivating beat: the Curator fabricates → a tool fixes it → a suite proves the fix held → a different model changes the price of getting it right. The scoreboard is not a fifth topic; **it is what makes the model swap a decision instead of a preference**, so cutting it would leave the chapter weaker, not lighter. Mitigation if the stream runs long: the community-tools reveal collapses to a single line and a Go Deeper link, since it is the one separable piece. **Do not cut the model swap and do not cut the case** — between them they are the concept |
 | R33 | **Chapter 2 overload** — integrator, audible sampling, voice agent, *and* session persistence in one 300→400 stream | Scoped explicitly in §6: `turn_detection` tuning is a `bonus_quest.py`, and transcript guardrails belong to Chapter 6. The integrator is fifteen lines and is the cold open, not a section. If the stream still runs long, the audible-degradation demo is pre-recorded rather than live — it is the only beat that depends on stream audio quality |
 | R21 | Chapter 5 could drift into philosophy and stop being a build chapter — "neuro-symbolic AI" invites lecturing | The history block is capped at ~12 minutes and every claim ties to something already built. Participants write a hand-rolled validator *before* the term is explained. If the stream runs long, cut history, never the build |
 | R22 | Automated Reasoning has **no streaming support**, so it cannot sit inline in Ch 2's voice stream or Ch 6's streaming UI | Taught as an architectural constraint, not hidden: it is a post-hoc verification layer. Ch 6 must show where in the request path each control lives — AR after a complete response, Guardrails inline |
 | R23 | A participant may over-trust a `VALID` result | The scope limitation is a **required teaching beat**, using the AWS docs' own fake-doctor's-note example. A proof is only as good as its axioms; verification moves the trust question from the model to the policy rather than eliminating it |
 | R24 | Automated Reasoning is **English (US) only**, which conflicts with Nova 2 Sonic's automatic language detection and polyglot voices (§6 Ch 2) | State it plainly when it arises. A visitor who addresses the Curator in French gets a French answer that **Automated Reasoning will not validate** — so Chapter 5's proof layer silently covers less of the product than Chapter 2 built. Name that gap on air; it is the clearest example in the series of two managed features composing imperfectly. *(Reworded 2026-08-04: this row previously cited "Ch 2's remix challenge," which the orphan audit found does not exist anywhere in the spec — §13.)* |
-| R17 | `strands.experimental.bidi` is **experimental** — the API may move without notice, it is the whole basis of Chapter 2, and Chapter 2 is now the **second** stream rather than the seventh | The one place a **version floor with an explanatory comment** is justified; say plainly on air that this is experimental; keep the voice agent to the documented quickstart surface (`BidiAgent`, `BidiNovaSonicModel`, `BidiAudioIO`, `BidiTextIO`, `FileSessionManager`) and avoid internals. **Severity rose with the move** — a churn break now lands in week two, when the audience is still deciding whether to follow the series |
-| R18 | Guardrails does not cover audio, so a developer who "attaches" a guardrail to the voice agent ships an unguarded product | Teach the transcript-interception path explicitly in Ch 6 (§6). **Spike required** to determine whether `BidiNovaSonicModel` accepts guardrail config or whether `ApplyGuardrail` must be called on transcript events by hand |
-| R19 | Voice demos fail live for reasons unrelated to code — microphone permissions, audio feedback loops, PortAudio install, device selection — **in week two** | Rehearse on the exact stream hardware; use headphones to prevent the speaker-into-microphone loop the docs warn about; pre-install PortAudio (`brew install portaudio`); have `BidiTextIO`-only fallback ready so the chapter still works if audio hardware fails on air. Requires Python 3.12+ and the `strands-agents[bidi]` extra |
+| R17 | `strands.experimental.bidi` is **experimental** — the API may move without notice, it is the whole basis of Chapter 2, and Chapter 2 is now the **second** stream rather than the seventh | The one place a **version floor with an explanatory comment** is justified; say plainly on air that this is experimental; keep the voice agent to the documented quickstart surface (`BidiAgent`, `BedrockNovaSonicModel`, `AudioIO`, `ConsoleIO`, `FileSessionManager`) and avoid internals. **Severity rose with the move** — a churn break now lands in week two, when the audience is still deciding whether to follow the series |
+| R18 | Guardrails does not cover audio, so a developer who "attaches" a guardrail to the voice agent ships an unguarded product | Teach the transcript-interception path explicitly in Ch 6 (§6). **Spike required** to determine whether `BedrockNovaSonicModel` accepts guardrail config or whether `ApplyGuardrail` must be called on transcript events by hand |
+| R19 | Voice demos fail live for reasons unrelated to code — microphone permissions, audio feedback loops, PortAudio install, device selection — **in week two** | Rehearse on the exact stream hardware; use headphones to prevent the speaker-into-microphone loop the docs warn about; pre-install PortAudio (`brew install portaudio`); have `ConsoleIO`-only fallback ready so the chapter still works if audio hardware fails on air. Requires Python 3.12+ and the `strands-agents[bidi]` extra |
 | R20 | Nova Sonic sessions cap at ~8 minutes and history at 50KB/message, 200KB total | This is taught as the chapter's headline 400-level problem rather than hidden, and is the reason session persistence is Chapter 2's second feature. Build the reconnection-and-continuation pattern as a TODO; AWS ships a connection-renewal pattern in their code samples to reference. Note the truncation is **silent** — visible only in debug logs |
 | R16 | Ch 3 carries multimodal *and* Structured Output | The two are taught as **one loop**, not two topics — Converse image block → schema-constrained response → validation failure drives retry. Mitigation if the stream runs long: the confidence-representation lesson becomes a side exercise, since it is the one genuinely separable piece |
 
