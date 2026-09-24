@@ -9,6 +9,9 @@ You build this file LIVE.
 
 from __future__ import annotations
 
-# TODO 1: given an agent result, print per-turn token counts (input / output).
-# TODO 2: measure and print wall-clock latency for a single turn.
-# TODO 3: return a small typed record so cases.py / the Experiment can read the numbers.
+# TODO 1: given an agent result, print per-turn token counts:
+#         result.metrics.accumulated_usage["inputTokens"] / ["outputTokens"] / ["totalTokens"]
+# TODO 2: print latency - result.metrics.accumulated_metrics["latencyMs"] - and the cycle count,
+#         result.metrics.cycle_count (it goes 1 -> 2 when find_exhibit is wired).
+# TODO 3: return a small frozen dataclass so the model-swap comparison can read the numbers.
+#         (verified 2026-09-24 against strands-agents 1.57.0)
