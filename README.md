@@ -23,6 +23,12 @@ aws bedrock list-inference-profiles --query 'inferenceProfileSummaries[].inferen
 
 Prerequisites: Python fluency, terminal comfort, and an AWS account with Amazon Bedrock access.
 
+Before each chapter, run its pre-stream check (exit code 0 means ready):
+
+```bash
+uv run python preflight.py 1
+```
+
 ## The adventure map — six galleries
 
 Each chapter builds on the previous one.
