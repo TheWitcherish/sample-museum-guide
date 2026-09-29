@@ -39,7 +39,7 @@ Community Day leveling guide, we do not cover every foundational concept.
 **Language: Python only.** No polyglot chapters, no cross-language comparisons. The history
 spans four eras; the language does not change.
 
-**Gamified.** Learning is structured as a certification game — see §5a. The workshop should
+**Gamified.** Learning is structured as a licensing game — see §5a. The workshop should
 be fun to *play*, not merely fun to read.
 
 ## 1a. Restructure record (2026-08-04) — do not relitigate
@@ -93,7 +93,7 @@ The restructure table is not the whole record. Two further directives landed on 
 
 | Amendment | What it overrules | Where it lives |
 |---|---|---|
-| **The Evals scoreboard runs from Chapter 1** | The design that shipped a *provided, unexplained* `certify.py` for Chapters 1–3 and opened the SDK only in Chapter 4. *"The Evals scoreboard must run since the 1st chapter to avoid frustrations for the audience watching the livestream or the YouTube video. I don't want to fail on a different line but instead show the added value of the Evals."* R31 is dissolved | §5a (the one-new-check-per-chapter table), §7, each chapter's Certification block |
+| **The Evals scoreboard runs from Chapter 1** | The design that shipped a *provided, unexplained* `certify.py` for Chapters 1–3 and opened the SDK only in Chapter 4. *"The Evals scoreboard must run since the 1st chapter to avoid frustrations for the audience watching the livestream or the YouTube video. I don't want to fail on a different line but instead show the added value of the Evals."* R31 is dissolved | §5a (the one-new-check-per-chapter table), §7, each chapter's Licence block |
 | **Chapter titles are creative, in the *Once Upon Agentic AI* register** | Flat working titles like "The Proving Room". Titles now carry an emoji and a hook; folder names stay plainly technical, which is the two-layer pattern the reference workshop actually uses | §5c (the authoritative title/folder table) |
 
 **Chapter 4 changed shape as a result, not just numbering.** It was *"where the scoreboard opens."*
@@ -294,20 +294,38 @@ celebrating the institution.
 | **Cloud as narrative** | Production paths (AgentCore, Knowledge Bases, deployment) are discussed and linked, never required. |
 | **Out of scope (2026-08-04)** | **MCP and multi-agent orchestration.** Go Deeper links only — see §1a for the verified reasoning and R32 for the accepted cost. |
 
-## 5a. Gamification: Museum Certification
+## 5a. Gamification: The Curator's Licence
 
 **The game loop is the curator's actual job: answer visitor questions correctly.**
 
 The win condition is not "my code ran" — it is **"my Curator satisfied the visitor."** Each
-chapter ships an **acceptance suite** of visitor questions the participant's Curator must
-pass to be *certified* for that gallery.
+chapter ships an **acceptance suite** of visitor questions the participant's Curator must pass
+before the museum will **licence** it to work that gallery.
 
 ```
-Gallery 1: When Computers Were People ... CERTIFIED  3/3   the tool was called, nothing invented
-Gallery 2: The Wheel and the Wave ....... CERTIFIED  5/5   + every answer inside 1200 ms
-Gallery 3: What the Hand Wrote .......... FAILED     7/8   judge: page 17 read confidently wrong
+Gallery 1: When Computers Were People ... LICENSED  3/3   the tool was called, nothing invented
+Gallery 2: The Wheel and the Wave ....... LICENSED  5/5   + every answer inside 1200 ms
+Gallery 3: What the Hand Wrote .......... REFUSED   7/8   judge: page 17 read confidently wrong
 Gallery 4: Eighty Hours Unattended ...... LOCKED
 ```
+
+### Why a licence and not a badge (decided 2026-09-29)
+
+The word does real work, which is the only reason to spend one. A licence is **granted on
+evidence, and it is revocable** — so the accumulating suite is not a trophy cabinet, it is the
+thing that can take the licence away. Change a prompt in week six and the Curator loses its
+Gallery 1 licence: that is the same mechanic as before, but now the name says what happens
+instead of merely recording that something passed.
+
+It also survives the two rules that killed every other game layer we considered (§3 of the
+standing rules): it adds **no** authoring machinery — no XP, no badge art, no leaderboard — and
+it is not a metaphor laid over the curriculum, because a real guide in a real museum genuinely is
+cleared gallery by gallery.
+
+**What does NOT change.** The harness keeps its filenames: `certify.py` is still the runner,
+`cases.py` is still what the participant authors, and `preflight.py` still gates the stream. Only
+the word the participant reads changes, so the rename costs zero code churn. Do not rename the
+files to chase the metaphor.
 
 **Why this is structural rather than decorative.** The Strands Evals SDK *is* the scoreboard.
 No badge system, no XP counter, no quiz engine — the game and the curriculum are the same
@@ -369,13 +387,13 @@ week**, and the participant built it themselves from episode one.
 | **The suite accumulates** | Each chapter carries the previous `cases.py` forward and appends tonight's. Ch 1 ends with 3 cases, Ch 3 with 16, Ch 6 with roughly 30 | Free — side effect of the §10a carry-forward rule |
 | **Failures name the visitor** | A failing case reports *which* visitor question broke and how, not just a red bar | Rubric authoring per case |
 | **Every red is closed in its own chapter** | A chapter may go red mid-episode; it must be green by the closing beat | Authoring discipline — this is the hard rule above |
-| **Progressive certification** | Galleries accumulate certifications; Ch 4 makes the whole suite a CI gate; Ch 5 and Ch 6 each donate a new class of check | Free — follows the arc |
+| **Progressive licensing** | Galleries accumulate licences; Ch 4 makes the whole suite a CI gate; Ch 5 and Ch 6 each donate a new class of check | Free — follows the arc |
 
 **Consequence for chapter structure.** Every chapter's existing "you'll know you're done
-when…" line gains a machine-checkable twin: the certification run. The participant does not
+when…" line gains a machine-checkable twin: the licence run. The participant does not
 have to *believe* the chapter worked; they can prove it — **from the first episode.**
 
-**Chapter 1's certification is the sharpest teaching moment in the series.** The participant writes
+**Chapter 1's licence run is the sharpest teaching moment in the series.** The participant writes
 one three-line case, runs it against a Curator with no tool and watches it go red, wires
 `find_exhibit`, runs it again and watches it go green. Probabilistic component, deterministic tool,
 and a scoreboard that knows the difference — in week one, with nothing held back.
@@ -497,12 +515,12 @@ account.
 Each chapter follows the established *Once Upon* template: frontmatter → header image →
 **Before You Code** (the new word / why we need it / ASCII mental model / *"you'll know
 you're done when…"* / first file you'll touch) → Quest Objective → numbered Steps anchored
-on `# TODO n` markers → Checkpoints between steps → Testing → **Certification run** →
+on `# TODO n` markers → Checkpoints between steps → Testing → **Licence run** →
 Troubleshooting → Quest Complete (learned + loot) → Go Deeper → closing italic quote.
 
 Failure modes are taught **inline as callouts**, before they bite — not in an appendix.
 
-**Certification run** is the new section this workshop adds versus *Once Upon Spring AI*: a
+**Licence run** is the new section this workshop adds versus *Once Upon Spring AI*: a
 command the participant runs to prove the gallery works, plus how to read the report when a
 visitor question fails. See §5a.
 
@@ -630,7 +648,7 @@ it invents one anyway); a vague tool description gets **silently skipped**, beca
 that description like a search query; and a model ID with a typo, which is the most common Bedrock
 error there is and looks identical to no access.
 
-**Certification — 3 cases, all green by the closing beat.** The fabrication case, a tool-choice case
+**Licence — 3 cases, all green by the closing beat.** The fabrication case, a tool-choice case
 (the arithmetic question routes to `calculator`, not `find_exhibit`), and a scope case the Curator
 already passes. The participant wrote all three and can read all three. **Nothing is carried into
 next week unexplained.**
@@ -760,7 +778,7 @@ visit's history intact.
 that is slower still, because silence in a conversation reads as failure. Latency is a
 correctness property here.
 
-**Certification — one new check: a threshold on a number.** Chapter 1's cases assert *which tool
+**Licence — one new check: a threshold on a number.** Chapter 1's cases assert *which tool
 ran*; that is a set comparison, and it cannot express "too slow." So the participant adds the second
 kind of assertion they will ever need: a **number with a limit on it**.
 
@@ -787,7 +805,7 @@ episode.
 That is the sequence that earns the SDK its keep on air: **a thing they felt, restated as a number,
 then closed.** Not a red line carried into next month.
 
-**Cumulative state at the closing beat:** galleries 1 and 2 both `CERTIFIED`, 8 cases green. The
+**Cumulative state at the closing beat:** galleries 1 and 2 both `LICENSED`, 8 cases green. The
 participant now owns two assertion kinds — *did the right thing happen* and *did it happen fast
 enough* — and neither one needs a model to judge it. Judges arrive in Chapter 3, once the habit is
 already boring.
@@ -877,7 +895,7 @@ why people in 1948 assumed machinery was limited to repetitive jobs. The string 
 once, as *"enigmatic sayings"*, in a passage about St Augustine and Dorothy Sayers. §3 already
 permits this paper by name among Turing's civilian work, and Chapter 5 already cites it.
 
-**Certification — one new check: the first judge model.** Two chapters of assertions have all been
+**Licence — one new check: the first judge model.** Two chapters of assertions have all been
 mechanical: a set of tool names, a number under a limit. Both are *cheap, deterministic and
 unarguable* — and both are now **useless**, because a confidently wrong transcription passes them
 all. It called the right tool. It answered fast. It filled every field. It is false.
@@ -909,7 +927,7 @@ confidently wrong`. The fix is not a better model; it is the honest-uncertainty 
 the schema. The participant makes `unreadable_fields` mandatory in the prompt, reruns, watches the
 Curator admit it cannot read a word, and the case turns green.
 
-**Cumulative state at the closing beat:** galleries 1–3 `CERTIFIED`, 16 cases green, three assertion
+**Cumulative state at the closing beat:** galleries 1–3 `LICENSED`, 16 cases green, three assertion
 kinds owned — *what ran*, *how fast*, *was it true*. Everything in Chapter 4 is depth on these three.
 
 ---
@@ -978,10 +996,10 @@ cousin, *"all my tests pass,"* when the tests are a self-portrait.
 about *inputs and data you did not author*. 4b: chaos injection, `diagnose`, `--fail-on`, CI gates —
 everything about *running unattended*.
 
-**Certification — no new check, and that is the point.** This is the only chapter that adds no new
+**Licence — no new check, and that is the point.** This is the only chapter that adds no new
 assertion kind. What it certifies is the **suite itself**: the sixteen cases plus whatever the
 simulator surfaced, running green under injected faults, from CI, with nobody watching. Galleries 1–4
-all `CERTIFIED` on a run the participant did not start by hand.
+all `LICENSED` on a run the participant did not start by hand.
 
 The closing beat is deliberately anticlimactic in the best way: the participant pushes a commit,
 switches away, and the scoreboard reports back. *Eighty hours unattended*, in the only form available
@@ -1121,7 +1139,7 @@ judge?* became *do I trust my axioms?*
   participant from over-trusting any single control.
 - Source documents: 5 MB and 50,000 characters maximum. Validation adds latency.
 
-**Certification — one new check: a proof, not an opinion.** Chapter 3's judge returns a *graded
+**Licence — one new check: a proof, not an opinion.** Chapter 3's judge returns a *graded
 verdict*; this chapter's policy returns `invalid` **and names the rule that was contradicted**. The
 participant writes a case whose expected result is a finding, so the golden set gains a class of
 check that neither judges nor structural assertions could express — and, unlike the judge, it cannot
@@ -1191,7 +1209,7 @@ ways it bites here: Guardrails does not cover audio at all (point 3 above), so a
 guardrail "attached" is unguarded; and a boundary that has never been attacked is a boundary nobody
 has evidence about. Configuration is not enforcement, and enforcement is not proof.
 
-**Certification — one new check: adversarial, and then the whole series' payoff.** The final new
+**Licence — one new check: adversarial, and then the whole series' payoff.** The final new
 assertion kind is a red-team evaluator: the scope boundary must hold not against the questions the
 participant thought of, but against strategies designed to get around them (Crescendo escalates
 gradually, PAIR iterates on refusals, SequentialBreak hides the ask inside a benign frame). Gallery 6
@@ -1264,7 +1282,7 @@ R32 for the accepted cost. **Prompt caching** remains a Go Deeper link only.
 | R28 | The NPL download URL could move or the file change, breaking Chapter 3 for everyone | `fetch_turing.sh` records the expected size (2,318,394 bytes) and sha256 prefix, and `preflight.py` (deliverable 10) asserts **zero extractable text** — if that ever returns non-zero the exercise is compromised and must be flagged, not worked around. Keep a local copy for the stream; if NPL's URL dies, the fallback is to author facsimiles after all |
 | R2 | Misrepresenting a real charity's holdings; an invented exhibit was already asserted once during design | **Resolved** — fictional museum, real machines, TNMOC credited and linked (§4) |
 | R3 | Guardrails refusals reading as suppression rather than scope | Mandatory framing rule (§3); refusal copy reviewed as content, not config |
-| R35 | **Every chapter now spends stream minutes on the scoreboard**, and six small eval sections could crowd out six builds | Hard budget: **one new check per chapter, one import, under ten minutes** (§5a table). The check is always introduced *after* the build works, as evidence — never as a preamble. If a stream runs long, the eval section shrinks to running the case the solution branch already contains; it is never cut entirely, because a chapter that ends on an uncertified gallery breaks the game |
+| R35 | **Every chapter now spends stream minutes on the scoreboard**, and six small eval sections could crowd out six builds | Hard budget: **one new check per chapter, one import, under ten minutes** (§5a table). The check is always introduced *after* the build works, as evidence — never as a preamble. If a stream runs long, the eval section shrinks to running the case the solution branch already contains; it is never cut entirely, because a chapter that ends on an unlicensed gallery breaks the game |
 
 ### Medium
 
@@ -1274,9 +1292,9 @@ R32 for the accepted cost. **Prompt caching** remains a Go Deeper link only.
 | R30 | **The level ladder dips** at Chapter 3 (300) after Chapter 2 (300→400) | Accepted and named on air as the breather episode. A dip after a peak is fine for retention; an unwarned spike is not. Do **not** inflate Chapter 3's scope to smooth the curve — that would break Rule 1 |
 | R5 | **The Evals SDK chapter is oversized for one stream** — even after the basics moved to Chapters 1–3, Chapter 4 still carries simulation, traces, chaos, diagnosis and CI | Reduced but still live (was Ch 5, now Ch 4, and lighter since `Case`/`Experiment`/`OutputEvaluator` are already known). Planned as **two streams, 4a and 4b**, split at §6's stated line: 4a is *inputs you did not author*, 4b is *running unattended*. If 4a still overruns, `HelpfulnessEvaluator` moves to 4b — it is the one piece with no dependency on the simulator narrative |
 | R6 | Strands core Structured Output and metrics shape | **Resolved 2026-09-24** against `strands-agents` 1.57.0: metrics are `result.metrics` (`cycle_count`, `cycle_durations`, `accumulated_usage["totalTokens"]`, `accumulated_metrics["latencyMs"]`); Structured Output is `agent(prompt, structured_output_model=Model)` read from `result.structured_output` — `agent.structured_output()` is deprecated and MUST NOT be taught |
-| R7 | Strands Evals is 1.4.0 (September 2026; was 1.0.3 in July) and churns — the Ch 1 API itself changed between them | **Not solved by pinning** — the OUAA pattern (§10a) mandates unpinned dependencies and no lockfile, and there is a single rolling `solution` branch rather than versioned snapshots. So the mitigation is **maintenance, not freezing**: (1) confine the taught API surface to the stable core, per R14; (2) `solution` is the canary — run its certification suites before every stream, so a breaking release surfaces there first; (3) use a version **floor with an explanatory comment** where a specific API demands one, exactly as OUAA does; (4) state the SDK version on air and in the README so a viewer of an older recording knows what it was built against. **Accepted consequence:** an old recording may not match current `main`. That is the cost of a living workshop, and the README says so |
+| R7 | Strands Evals is 1.4.0 (September 2026; was 1.0.3 in July) and churns — the Ch 1 API itself changed between them | **Not solved by pinning** — the OUAA pattern (§10a) mandates unpinned dependencies and no lockfile, and there is a single rolling `solution` branch rather than versioned snapshots. So the mitigation is **maintenance, not freezing**: (1) confine the taught API surface to the stable core, per R14; (2) `solution` is the canary — run its licence suites before every stream, so a breaking release surfaces there first; (3) use a version **floor with an explanatory comment** where a specific API demands one, exactly as OUAA does; (4) state the SDK version on air and in the README so a viewer of an older recording knows what it was built against. **Accepted consequence:** an old recording may not match current `main`. That is the cost of a living workshop, and the README says so |
 | R8 | Live latency numbers are noisy on stream | Lead with token counts; treat wall-clock as indicative |
-| R13 | Certification runs are LLM-judged, so a correct solution could fail intermittently — unacceptable in a graded game, and now the game starts in episode one | **Strengthened by ordering (2026-08-04).** Chapters 1 and 2 use only deterministic assertions — a tool-name set comparison and a millisecond threshold. Neither can flake. The first judge model does not appear until **Chapter 3**, by which point the participant has seen the scoreboard be right twice and has a baseline for trusting it. The judge is also *audited before it is trusted* (§6 Ch 3): run it against a known-correct page first. Standing rules unchanged — rubric thresholds set tolerantly, judged scores advisory, structural checks binding |
+| R13 | Licence runs are LLM-judged, so a correct solution could fail intermittently — unacceptable in a graded game, and now the game starts in episode one | **Strengthened by ordering (2026-08-04).** Chapters 1 and 2 use only deterministic assertions — a tool-name set comparison and a millisecond threshold. Neither can flake. The first judge model does not appear until **Chapter 3**, by which point the participant has seen the scoreboard be right twice and has a baseline for trusting it. The judge is also *audited before it is trusted* (§6 Ch 3): run it against a known-correct page first. Standing rules unchanged — rubric thresholds set tolerantly, judged scores advisory, structural checks binding |
 | R25 | Chapter 4's golden set cannot import cases from earlier chapters — and the CLI gate needs an `experiment.json` nothing authors | **Dissolved by the §10a layout.** Under the *Once Upon Agentic AI* convention chapters never import from each other: each has its own `cases.py`, and Chapter 4 gets earlier cases **copied forward** into its folder. Simpler now than before, because the participant *authors* galleries 1–3's cases in Chapter 4 rather than inheriting them. What survives: asset paths resolve via `Path(__file__).parent`, never the caller's cwd; and `export_experiment.py` still generates `experiment.json` for the CLI gate, with a plain-Python gate as fallback |
 | R29 | Copying code forward into every chapter folder means the same file exists in several places, so a fix applied in one chapter does not propagate | Accepted deliberately — it is what makes each folder a runnable snapshot and lets latecomers start anywhere. Mitigations: `solution` is the single reference implementation and its files retain their `# TODO:` comments; `preflight.py` (deliverable 10) diffs the carried-forward files against it so silent drift is caught; and the duplication is **named on air** so it does not read as sloppiness |
 | R26 | `strands-agents-tools` is a separate distribution whose package and import names differ (`strands_tools`), and it is now a **Chapter 1** dependency rather than a late one | **Resolved by declaration, not pinning** (§10a forbids pins): list `strands-agents-tools` in the root `pyproject.toml` alongside `strands-agents`, and keep an import probe in `preflight.py` (deliverable 10) — `from strands_tools import calculator, stop` must resolve before Stream 1. The risk rose in severity by moving to Chapter 1: a broken import now blocks the first episode, not the sixth |
@@ -1316,25 +1334,50 @@ R32 for the accepted cost. **Prompt caching** remains a Go Deeper link only.
 | Stream | Chapter | 30-Second Kickoff (shown before any explanation) |
 |---|---|---|
 | 1 | Ch 1 · 🧮 When Computers Were People | The same question answered twice — once fabricated, once tool-backed — then the scoreboard pricing that answer on three models |
-| 2 | Ch 2 · 🎙️ The Wheel and the Wave | A voice recording falling apart as the sample rate drops, then a spoken conversation with the Curator, interrupted mid-sentence |
-| 3 | Ch 3 · ✍️ What the Hand Wrote | A photo of a handwritten page becomes JSON on screen — and one word comes back as `unreadable` |
+| 2 | Ch 2 · 🎙️ The Wheel and the Wave | A voice recording falling apart as the sample rate drops, then a spoken conversation with the Curator, interrupted mid-sentence || 3 | Ch 3 · ✍️ What the Hand Wrote | A photo of a handwritten page becomes JSON on screen — and one word comes back as `unreadable` |
 | 4 | Ch 4a · ⏱️ Eighty Hours Unattended | Sixteen green cases, then a simulated visitor asking something nobody wrote — and breaking it |
 | 5 | Ch 4b · ⏱️ Eighty Hours Unattended | A prompt change breaking CI with nobody watching |
 | 6 | Ch 5 · ⚖️ Prove It | The Curator proving a claim is wrong, and naming the rule it contradicted |
 | 7 | Ch 6 · 🎟️ Opening Day | A browser visitor touring the museum; an off-topic ask declined in character, by voice and text |
 
-Each stream ends on its **certification run** — a visible pass, or an honest failure fixed on
+Each stream ends on its **licence run** — a visible pass, or an honest failure fixed on
 air. That gives every episode the same satisfying close, and it is authentic: the audience
 watches the scoreboard turn green rather than taking the host's word for it.
 
 **And from week one, the scoreboard is legible.** Every episode's closing beat is the same shape:
-gallery N goes `CERTIFIED`, the case count grows, and the participant can read every line of it. No
+gallery N goes `LICENSED`, the case count grows, and the participant can read every line of it. No
 episode ends on a red the audience cannot explain — that rule is what makes the closing beat a win
 rather than a cliffhanger (§5a).
 
 **Clip factories.** Chapter 2 (talking to the Curator out loud and interrupting it) and Chapter 3
 (handwriting to JSON) both need no editing to work as a Reel, Short or TikTok. Having one of them in
 week two rather than week seven is a direct benefit of the restructure.
+
+### Stream titles (distinct from catalog titles — decided 2026-09-29)
+
+The §5c catalog titles name the *gallery*; a stream title has to survive a YouTube sidebar, so it
+names the *bug*. Recorded here as they are chosen, so a stream and its chapter never drift apart.
+
+| Stream | Chapter | Livestream / video title |
+|---|---|---|
+| 2 | Ch 2 · 🎙️ The Wheel and the Wave | **Echo Another Day: Voice Agents with pywebrtc-audio and Strands Agents** |
+
+### The audience transcript game (Chapter 2, and it is the reason voice is the live-demo chapter)
+
+Chapter 2 is the only chapter the audience can play **with their own voices**, so the stream and the
+in-room session both run the same beat: the live transcript stays on screen next to the Curator's
+answers, and the room compares *what was said* with *what the model heard*.
+
+This needs no custom code — verified 2026-09-29 against `strands-agents` 1.57.1. `AudioIO`'s output
+stream already renders a live transcript panel, and the underlying events are public:
+`BidiTranscriptStartEvent` and `BidiTranscriptDeltaEvent` each carry a `role` of `"user"` or
+`"assistant"`, so the participant's own ASR text is on screen beside the reply, unedited.
+
+Why it earns its minutes rather than being a gimmick: an accent, a room, a domain word like
+*dekatron* or *Comptometer* is where speech recognition actually struggles, and the audience
+supplies all three for free. The mishearings are the teaching material — they motivate Chapter 3's
+honest-uncertainty schema several weeks early, and they are the funniest thing in the series.
+Invite volunteers to try to break it; a wrong transcript is a discovery, never a gotcha.
 
 ## 10. Deliverables
 
@@ -1355,7 +1398,7 @@ week two rather than week seven is a direct benefit of the restructure.
    itself is gitignored, never committed.
 5. **Illustrative catalog dataset** — `catalog.json` at the repo root, real machines described
    accurately.
-6. **Certification harness** — a provided `certify.py` **carried into every chapter folder as the
+6. **Licence harness** — a provided `certify.py` **carried into every chapter folder as the
    same file** (rule 6 forbids reaching across chapters), plus a per-chapter `cases.py` that the
    **participant authors from Chapter 1 onward**, shipping as `# TODO:` skeletons. Each chapter's
    `cases.py` carries forward the previous chapter's cases and adds the one new check from §5a's
@@ -1535,7 +1578,7 @@ grows it instead.
 **Two carry-forward rules the tree encodes, and both follow from rule 6.**
 
 **The runner is carried, not imported.** `certify.py` appears in folders 1, 2 and 3 as the *same
-file* — a participant in Chapter 3 must be able to run their certification without reaching into
+file* — a participant in Chapter 3 must be able to earn their licence without reaching into
 `../1_first_agent_and_tools/`. From Chapter 4 the participant's own `run_all.py` replaces it, and that
 is carried forward into 5 and 6 instead.
 
@@ -1621,7 +1664,7 @@ reading a finished file with no signposts. **Every solution file in this worksho
 TODO comments.**
 
 The reference repo's solution branch also carries `tests/` and a `requirements.txt` that `main` does
-not. We follow that: the certification suites run green on `solution`, and `preflight.py` diffs
+not. We follow that: the licence suites run green on `solution`, and `preflight.py` diffs
 carried-forward files against it to catch the drift R29 warns about.
 
 Every stream's escape hatch is `git checkout solution` — per the live-coding rule, if something
@@ -1809,7 +1852,7 @@ any row, it is incomplete and MUST NOT be implemented from.
 | Engineering beats in order, each mapping to a `# TODO:` marker | §6 chapter body, §10a tree |
 | Every file the folder ships, marked *TODO* / *provided* / *carried forward* | §10a tree |
 | The one new check, its assertion kind, and whether it needs a model | §5a table, §7 table |
-| The Certification block: case count, what goes red, and how it closes **in-episode** | §6 Certification |
+| The Licence block: case count, what goes red, and how it closes **in-episode** | §6 Licence |
 | The Done-when condition | §6 chapter body |
 | The failure mode taught inline as a callout | §6 chapter body |
 | Every live risk touching the chapter, by ID | §8 |
