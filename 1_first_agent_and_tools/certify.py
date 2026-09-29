@@ -3,6 +3,9 @@
 It imports the experiment and task you build in cases.py, runs them, and prints the scoreboard.
 The check is mechanical, not a vibe.
 
+Until you finish cases.py, mypy reports that `cases` has no attribute `build_experiment`.
+That is the type checker reading your TODO list, not broken sample code.
+
     uv run python 1_first_agent_and_tools/certify.py
 
 Verified 2026-09-24 against strands-agents-evals 1.4.0: run_evaluations(task) takes the task.

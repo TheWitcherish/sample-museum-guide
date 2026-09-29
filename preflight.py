@@ -19,8 +19,15 @@ from pathlib import Path
 from typing import Final
 
 ROOT: Final[Path] = Path(__file__).resolve().parent
-REGION: Final[str] = os.environ.get("AWS_REGION", "us-west-2")
-MODEL_ID: Final[str] = os.environ.get("MODEL_ID", "global.anthropic.claude-sonnet-5")
+
+# Defaults live in named constants, the shape example/curator.py teaches. Both verified ACTIVE
+# in us-west-2 on 2026-09-29. Override with:
+#   export AWS_REGION=YOUR_AWS_REGION
+#   export MODEL_ID=YOUR_MODEL
+DEFAULT_REGION: Final[str] = "us-west-2"
+DEFAULT_MODEL_ID: Final[str] = "global.anthropic.claude-sonnet-5"
+REGION: Final[str] = os.environ.get("AWS_REGION", DEFAULT_REGION)
+MODEL_ID: Final[str] = os.environ.get("MODEL_ID", DEFAULT_MODEL_ID)
 
 
 def imports(*modules: str) -> Callable[[], str]:

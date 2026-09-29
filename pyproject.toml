@@ -21,6 +21,17 @@ dependencies = [
 target-version = "py312"
 line-length = 100
 
+[tool.ruff.format]
+# ruff's default `include` covers "*.md", so `ruff format .` rewrites the Python snippets inside
+# spec.md and README.md - including snippets that are deliberately wrong. Lint still reads them.
+exclude = ["*.md"]
+
 [tool.mypy]
 python_version = "3.12"
 strict = true
+
+[[tool.mypy.overrides]]
+# strands_evals ships no py.typed marker, so --strict cannot analyse it. strands and
+# strands_tools both do, so the gap is this one distribution, not the SDK family.
+module = ["strands_evals.*"]
+ignore_missing_imports = true

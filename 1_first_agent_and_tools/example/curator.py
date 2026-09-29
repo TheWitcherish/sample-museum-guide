@@ -1,6 +1,6 @@
 """Chapter 1 solution - the Curator, its two tools, and the questions from the stream.
 
-    uv run python 1_first_agent_and_tools/example/curator.py
+Run it with:  uv run python 1_first_agent_and_tools/example/curator.py
 """
 
 from __future__ import annotations
