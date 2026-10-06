@@ -666,7 +666,7 @@ computers were people."*
 
 ### Chapter 2 — 🎙️ The Wheel and the Wave
 *Talking to the Curator* · folder `2_voice_agent/`
-**Level 300→400 · Bedrock: Nova Sonic speech-to-speech · Strands Agents: bidirectional streaming + session persistence · Evals: latency as an assertion**
+**Level 300→400 · Bedrock: Nova Sonic speech-to-speech · Strands Agents: bidirectional streaming + session persistence · Audio: WebRTC echo cancellation · Evals: latency as an assertion**
 
 **Anchor: 1928. Era: 1928–1949.**
 
@@ -737,6 +737,61 @@ audio={"input": {"sample_rate": 16000}}
 That is the sampling theorem, in a config file, typed by developers who have never been told whose
 theorem it is — and it belongs to the same person who ran the analog machine at the top of the hour.
 
+*Then it hears itself.* Run that agent on a laptop with the speakers on — which is what every
+participant, and every person in the room, will actually do — and the microphone picks up the
+Curator's own voice. Nova Sonic cannot tell the difference: its own output arrives as user speech,
+so it answers itself, interrupts itself, and the conversation eats its own tail inside two turns.
+
+The old fix was headphones. That works for one developer at a desk and fails on a stage, in a
+classroom, and on any device with a speaker — which is every device a museum would actually put in a
+gallery. The real fix is **acoustic echo cancellation**: subtract what you played from what you heard.
+
+```python
+from pywebrtc_audio import AudioProcessor
+
+# The same 16000 as the Nova Sonic config above, and not a coincidence: AEC
+# works on 10 ms frames, so a rate with a whole number of samples per frame
+# (16000 * 0.01 = 160) is what keeps cancellation quality intact.
+aec = AudioProcessor(
+    sample_rate=16000,
+    echo_cancellation=True,
+    noise_suppression=True,
+    stream_delay_ms=40,  # speaker-buffer delay; PyAudio reports its own
+)
+
+# near = what the mic captured (the visitor, plus the Curator's own echo)
+# far  = what we last played through the speaker (the reference signal)
+clean = aec.process(near, far)
+```
+
+**This is where the chapter's own I/O lesson grows teeth.** `AudioIO` owns both the microphone and
+the speaker, so a participant reaching for AEC immediately discovers they need *both sides in one
+place* — the frame just captured and the frame just played. That is a custom `InputStream`, the same
+protocol this chapter already names for browser and mobile clients, and now there is a reason to
+implement one on a laptop. The line below about local versus server-side I/O stops being abstract.
+
+**It is still one concept, and the title already covered it.** Chapter 2 is a continuous quantity
+reaching a machine that can only sample it. Echo is that same wave arriving a second time, from the
+wrong direction — so AEC sits inside Rule 1's first clause rather than adding a second idea. *The
+Wheel and the Wave* names both halves, and the stream title, **Echo Another Day**, makes it the
+headline rather than an appendix.
+
+**And one number settles an argument before the room can start it.** Participants will assume the
+echo canceller is what blew the latency budget. Verified 2026-10-06 against the library's published
+benchmark: at 16 kHz mono the echo canceller costs **622 µs per 100 ms of audio**, and the full
+AEC + noise-suppression + gain pipeline **649 µs** — 154x real time, in C++ with the GIL released.
+That is roughly half a millisecond against the 1200 ms threshold below: **0.05 percent of the
+budget.** The latency failure in the licence run is the awaited tool call, not the audio processing,
+and putting that number on screen is what stops the room blaming the wrong component.
+
+**Why `pywebrtc-audio` rather than writing it.** This is Chapter 1's import-don't-write judgement
+call arriving a third time, in its least arguable form yet: AEC3 is the echo canceller that ships in
+Chrome, Edge and every WebRTC application, and nobody in this room is going to out-implement it on a
+livestream. Verified 2026-10-06 on PyPI: `pywebrtc-audio` 0.2.0, Apache-2.0, Python 3.10–3.14,
+pre-built wheels for macOS arm64 and x86_64, Linux and Windows — and it ships
+`examples/strands_agents_bidi.py`, a working `BidiAgent` integration, so the seam is the library's
+own documented use case rather than something this workshop invented.
+
 **The product.** Museums have audio guides. The analog one was a cassette handset on a lanyard.
 The modern one is a voice agent. Same product, ninety years apart — legacy-to-modern in a single
 object most of the audience has physically held. Radio and the cassette handset are told as the
@@ -758,8 +813,9 @@ request-response. Voice is none of those things:
   it.
 - **Local versus server-side I/O.** `AudioIO` uses PyAudio for a laptop microphone;
   browser and mobile clients need custom handlers implementing the `InputStream`/`OutputStream`
-  protocols. That distinction is
-  the difference between a demo and a deployment.
+  protocols. **AEC is what forces a participant to actually write one**, because cancelling an echo
+  needs the captured frame and the played frame together, which the default handler keeps apart.
+  That distinction is the difference between a demo and a deployment.
 
 **Reuse, not new surface.** Chapter 1's custom tool and community tools become *speakable* with no
 rewrite, one week after being written. That is the lesson: **a well-built tool does not care what
@@ -770,13 +826,17 @@ a `bonus_quest.py`, and the transcript-guardrail path belongs to Chapter 6 where
 paths are contrasted. Both were in the original 400-level design and both would push this chapter
 past one concept.
 
-**Done when** a visitor holds a conversation with the Curator by voice, interrupts it
-mid-sentence and it recovers, and the session survives past the eight-minute limit with the
-visit's history intact.
+**Done when** a visitor holds a conversation with the Curator by voice **on open speakers, with no
+headphones**, interrupts it mid-sentence and it recovers, and the session survives past the
+eight-minute limit with the visit's history intact.
 
-**Failure mode taught.** A voice agent that is *correct but too slow* is worse than a text agent
-that is slower still, because silence in a conversation reads as failure. Latency is a
-correctness property here.
+**Failure modes taught.** Two, and the first is the chapter's headline. A voice agent that is
+*correct but too slow* is worse than a text agent that is slower still, because silence in a
+conversation reads as failure — latency is a correctness property here. The second is quieter and
+costs an afternoon: a `stream_delay_ms` that does not match the real speaker-buffer delay leaves the
+echo only partly cancelled, which on stage is indistinguishable from a bad microphone. It is a
+read/write property, so it is tuned live rather than guessed at — which is also the most
+audience-participatory debugging in the series.
 
 **Licence — one new check: a threshold on a number.** Chapter 1's cases assert *which tool
 ran*; that is a set comparison, and it cannot express "too slow." So the participant adds the second
@@ -1230,7 +1290,7 @@ teach.
 
 ## 7. Feature placement audit
 
-All eleven features earn their placement; none is bolted on. (Four were required up front — model
+All twelve features earn their placement; none is bolted on. (Four were required up front — model
 choice, Structured Output, multimodal, Guardrails — and the rest arrived as the design found the
 problems they solve.)
 
@@ -1242,6 +1302,7 @@ problems they solve.)
 | **Speech-to-speech (Nova Sonic)** | **Bedrock** | **2** | Museums have audio guides. The analog one was a cassette handset; the modern one is a voice agent |
 | **Bidirectional streaming** | **Strands Agents** | **2** | `BidiAgent` wraps the WebSocket event choreography Nova Sonic requires |
 | **Session persistence + reconnection** | **Strands Agents** | **2** | Nova Sonic caps a session at ~8 minutes; a museum visit is longer. The building forces it |
+| **Acoustic echo cancellation** | **`pywebrtc-audio`** (third party, Apache-2.0) | **2** | The Curator speaks through a speaker and listens through a microphone on the same device, so it hears itself and answers itself. Headphones hide that at a desk; a gallery device has no headphones. It is also the only row here owned by **neither** Bedrock nor Strands, which is a precision the chapter states out loud |
 | Multimodal document reading | **Bedrock** | 3 | It *is* the analog-to-digital transition |
 | Structured Output | **Strands Agents** | 3 | Turning an analog artifact into structured data *is* the chapter; validation failure doubles as the retry trigger |
 | Evals SDK | **Strands (separate distribution)** | **1, deepened every chapter** | The model swap in Chapter 1 is unanswerable without measurement — "which model should I ship?" is a vibe until a suite decides it. Reliability then becomes the *headline* metric in Chapter 4, where the WITCH's eighty unattended hours name the goal |
@@ -1301,14 +1362,14 @@ R32 for the accepted cost. **Prompt caching** remains a Go Deeper link only.
 | R27 | Model IDs written into content go stale fast — the original Sonnet 4.6 baseline became legacy within weeks | Re-baselined to the Claude 5 family, verified ACTIVE in `us-west-2`. **`preflight.py` (deliverable 10) re-verifies every written model ID against the live account before each stream** — this row previously pointed at "Task 0," a step defined only in the superseded plan documents, which is a dead reference the 2026-08-04 orphan audit caught (§13); treat every written ID as perishable |
 | R14 | Every chapter depends on `strands-agents-evals` from Chapter 1 — and now it is *taught* from Chapter 1 too, so a breaking release breaks the first episode | Do **not** pin (§10a). Instead: (1) the API surface taught in Chapters 1–3 is deliberately the **smallest and most stable** in the SDK — `Case`, `Experiment`, `ToolCalled`, `OutputEvaluator` — while trace/chaos/simulator/red-team APIs stay in the churn-prone tier from Chapter 4 onward; (2) `certify.py` is a thin runner carried into every folder, so a break is a one-file fix repeated mechanically; (3) the import probe in `preflight.py` covers `strands_evals` before Stream 1, alongside `strands_tools` (R26) — and the dependency MUST be named `strands-agents-evals`: the PyPI name **`strands-evals` is a typosquat** (a fake "data synchronization" package, found 2026-09-24) that a participant typing the import name would install; (4) fix forward on the rolling `solution` branch, then carry the fix into each affected chapter folder |
 | R15 | **Chapter 1 overload** — the agent, a custom tool, the community tools package, the three-model swap, *and* now the scoreboard | The five serve one sentence (§5b Rule 1) and one motivating beat: the Curator fabricates → a tool fixes it → a suite proves the fix held → a different model changes the price of getting it right. The scoreboard is not a fifth topic; **it is what makes the model swap a decision instead of a preference**, so cutting it would leave the chapter weaker, not lighter. Mitigation if the stream runs long: the community-tools reveal collapses to a single line and a Go Deeper link, since it is the one separable piece. **Do not cut the model swap and do not cut the case** — between them they are the concept |
-| R33 | **Chapter 2 overload** — integrator, audible sampling, voice agent, *and* session persistence in one 300→400 stream | Scoped explicitly in §6: `turn_detection` tuning is a `bonus_quest.py`, and transcript guardrails belong to Chapter 6. The integrator is fifteen lines and is the cold open, not a section. If the stream still runs long, the audible-degradation demo is pre-recorded rather than live — it is the only beat that depends on stream audio quality |
+| R33 | **Chapter 2 overload** — integrator, audible sampling, voice agent, echo cancellation *and* session persistence in one 300→400 stream. **Raised 2026-10-06** when AEC became a chapter beat rather than a stream-title mention | Scoped explicitly in §6: `turn_detection` tuning is a `bonus_quest.py`, and transcript guardrails belong to Chapter 6. The integrator is fifteen lines and is the cold open, not a section; AEC is roughly ten lines plus the custom `InputStream` it forces. **Trim order if the stream runs long, most expendable first:** (1) the audible-degradation demo is pre-recorded rather than live — it is the only beat depending on stream audio quality; (2) session persistence collapses to showing `FileSessionManager` wired and a Go Deeper link for the reconnection logic. **Do not trim AEC** — the stream title promises it, the demo runs on open speakers because of it, and without it the feedback loop makes every other beat unwatchable |
 | R21 | Chapter 5 could drift into philosophy and stop being a build chapter — "neuro-symbolic AI" invites lecturing | The history block is capped at ~12 minutes and every claim ties to something already built. Participants write a hand-rolled validator *before* the term is explained. If the stream runs long, cut history, never the build |
 | R22 | Automated Reasoning has **no streaming support**, so it cannot sit inline in Ch 2's voice stream or Ch 6's streaming UI | Taught as an architectural constraint, not hidden: it is a post-hoc verification layer. Ch 6 must show where in the request path each control lives — AR after a complete response, Guardrails inline |
 | R23 | A participant may over-trust a `VALID` result | The scope limitation is a **required teaching beat**, using the AWS docs' own fake-doctor's-note example. A proof is only as good as its axioms; verification moves the trust question from the model to the policy rather than eliminating it |
 | R24 | Automated Reasoning is **English (US) only**, which conflicts with Nova 2 Sonic's automatic language detection and polyglot voices (§6 Ch 2) | State it plainly when it arises. A visitor who addresses the Curator in French gets a French answer that **Automated Reasoning will not validate** — so Chapter 5's proof layer silently covers less of the product than Chapter 2 built. Name that gap on air; it is the clearest example in the series of two managed features composing imperfectly. *(Reworded 2026-08-04: this row previously cited "Ch 2's remix challenge," which the orphan audit found does not exist anywhere in the spec — §13.)* |
 | R17 | `strands.experimental.bidi` is **experimental** — the API may move without notice, it is the whole basis of Chapter 2, and Chapter 2 is now the **second** stream rather than the seventh | The one place a **version floor with an explanatory comment** is justified; say plainly on air that this is experimental; keep the voice agent to the documented quickstart surface (`BidiAgent`, `BedrockNovaSonicModel`, `AudioIO`, `ConsoleIO`, `FileSessionManager`) and avoid internals. **Severity rose with the move** — a churn break now lands in week two, when the audience is still deciding whether to follow the series |
 | R18 | Guardrails does not cover audio, so a developer who "attaches" a guardrail to the voice agent ships an unguarded product | Teach the transcript-interception path explicitly in Ch 6 (§6). **Spike required** to determine whether `BedrockNovaSonicModel` accepts guardrail config or whether `ApplyGuardrail` must be called on transcript events by hand |
-| R19 | Voice demos fail live for reasons unrelated to code — microphone permissions, audio feedback loops, PortAudio install, device selection — **in week two** | Rehearse on the exact stream hardware; use headphones to prevent the speaker-into-microphone loop the docs warn about; pre-install PortAudio (`brew install portaudio`); have `ConsoleIO`-only fallback ready so the chapter still works if audio hardware fails on air. Requires Python 3.12+ and the `strands-agents[bidi]` extra |
+| R19 | Voice demos fail live for reasons unrelated to code — microphone permissions, audio feedback loops, PortAudio install, device selection — **in week two** | **Rewritten 2026-10-06: the feedback loop is now the chapter's own content, not a stage workaround.** `pywebrtc-audio` AEC is what stops the speaker-into-microphone loop, so the demo runs on open speakers and the audience can hear both sides. Headphones are demoted to a belt-and-braces fallback if AEC misbehaves on the stream hardware. Still required: rehearse on the exact stream hardware, pre-install PortAudio (`brew install portaudio`), keep a `ConsoleIO`-only fallback ready, Python 3.12+ and the `strands-agents[bidi]` extra. **Two new live risks arrive with AEC:** a `stream_delay_ms` mismatched to the real speaker-buffer delay leaves the echo partly uncancelled (taught as the chapter's second failure mode, tuned live — it is a read/write property), and the library is a compiled wheel, so confirm the macOS arm64 wheel installs on the stream machine during rehearsal rather than discovering a source build on air |
 | R20 | Nova Sonic sessions cap at ~8 minutes and history at 50KB/message, 200KB total | This is taught as the chapter's headline 400-level problem rather than hidden, and is the reason session persistence is Chapter 2's second feature. Build the reconnection-and-continuation pattern as a TODO; AWS ships a connection-renewal pattern in their code samples to reference. Note the truncation is **silent** — visible only in debug logs |
 | R16 | Ch 3 carries multimodal *and* Structured Output | The two are taught as **one loop**, not two topics — Converse image block → schema-constrained response → validation failure drives retry. Mitigation if the stream runs long: the confidence-representation lesson becomes a side exercise, since it is the one genuinely separable piece |
 
@@ -1334,7 +1395,8 @@ R32 for the accepted cost. **Prompt caching** remains a Go Deeper link only.
 | Stream | Chapter | 30-Second Kickoff (shown before any explanation) |
 |---|---|---|
 | 1 | Ch 1 · 🧮 When Computers Were People | The same question answered twice — once fabricated, once tool-backed — then the scoreboard pricing that answer on three models |
-| 2 | Ch 2 · 🎙️ The Wheel and the Wave | A voice recording falling apart as the sample rate drops, then a spoken conversation with the Curator, interrupted mid-sentence || 3 | Ch 3 · ✍️ What the Hand Wrote | A photo of a handwritten page becomes JSON on screen — and one word comes back as `unreadable` |
+| 2 | Ch 2 · 🎙️ The Wheel and the Wave | The Curator hearing itself on open speakers and answering itself into a feedback loop — then one `AudioProcessor` and the same conversation, clean, interrupted mid-sentence |
+| 3 | Ch 3 · ✍️ What the Hand Wrote | A photo of a handwritten page becomes JSON on screen — and one word comes back as `unreadable` |
 | 4 | Ch 4a · ⏱️ Eighty Hours Unattended | Sixteen green cases, then a simulated visitor asking something nobody wrote — and breaking it |
 | 5 | Ch 4b · ⏱️ Eighty Hours Unattended | A prompt change breaking CI with nobody watching |
 | 6 | Ch 5 · ⚖️ Prove It | The Curator proving a claim is wrong, and naming the rule it contradicted |
@@ -1362,22 +1424,30 @@ names the *bug*. Recorded here as they are chosen, so a stream and its chapter n
 |---|---|---|
 | 2 | Ch 2 · 🎙️ The Wheel and the Wave | **Echo Another Day: Voice Agents with pywebrtc-audio and Strands Agents** |
 
-### The audience transcript game (Chapter 2, and it is the reason voice is the live-demo chapter)
+### Taking the microphone (Chapter 2, and it is the delivery of the AEC beat — not a separate beat)
 
-Chapter 2 is the only chapter the audience can play **with their own voices**, so the stream and the
-in-room session both run the same beat: the live transcript stays on screen next to the Curator's
-answers, and the room compares *what was said* with *what the model heard*.
+Chapter 2 is the only chapter the audience can play **with their own voices**, and that is
+deliberately *presentation*, not curriculum. There is no extra feature here and nothing extra to
+author: it is how the echo-cancellation beat is **delivered on air**, and it does two jobs.
 
-This needs no custom code — verified 2026-09-29 against `strands-agents` 1.57.1. `AudioIO`'s output
-stream already renders a live transcript panel, and the underlying events are public:
-`BidiTranscriptStartEvent` and `BidiTranscriptDeltaEvent` each carry a `role` of `"user"` or
-`"assistant"`, so the participant's own ASR text is on screen beside the reply, unedited.
+**It makes the live coding survivable, and funny.** AEC on a stage is the beat most likely to
+misbehave live — a `stream_delay_ms` that is wrong for the venue's speakers leaves an audible
+ghost. Rather than hiding that, the room is invited into it: the host tunes the property live while
+people hear the result change. A wrong value is a discovery, never a gotcha, and it is the most
+participatory debugging in the series.
 
-Why it earns its minutes rather than being a gimmick: an accent, a room, a domain word like
-*dekatron* or *Comptometer* is where speech recognition actually struggles, and the audience
-supplies all three for free. The mishearings are the teaching material — they motivate Chapter 3's
-honest-uncertainty schema several weeks early, and they are the funniest thing in the series.
-Invite volunteers to try to break it; a wrong transcript is a discovery, never a gotcha.
+**Then someone in the room asks the Curator something.** Once Chapter 2 is implemented, a volunteer
+genuinely takes a microphone and asks a question — an accent, a room, and a domain word like
+*dekatron* or *Comptometer* are precisely where speech recognition struggles, and the audience
+supplies all three for free. This needs no custom code: verified 2026-09-29 against `strands-agents`
+1.57.1, `AudioIO`'s output stream already renders a live transcript panel, and the underlying
+`BidiTranscriptStartEvent` / `BidiTranscriptDeltaEvent` each carry a `role` of `"user"` or
+`"assistant"`, so the speaker's own ASR text appears beside the reply, unedited.
+
+The mishearings are a bonus rather than the point: they motivate Chapter 3's honest-uncertainty
+schema several weeks early, and they are the funniest thing in the series. **This also means the
+microphone moment is the one piece of Chapter 2 that does not survive a cut to a recorded video** —
+it needs a room.
 
 ## 10. Deliverables
 
@@ -1449,7 +1519,9 @@ Invite volunteers to try to break it; a wrong transcript is a discovery, never a
    releases of the Strands SDK. If a chapter breaks against a newer release, please open an issue."*
    Floors are used only where a specific API demands one — observed:
    `"strands-agents[a2a]>=1.44"` with an inline comment naming the API that forced it. **Ours needs
-   one floor for the same reason: `strands-agents[bidi]`, per R17.**
+   two floors for the same reason: `strands-agents[bidi]` per R17, and `pywebrtc-audio>=0.2` —
+   a 0.x beta whose `AudioProcessor` surface and read/write `stream_delay_ms` property are what
+   Chapter 2 teaches against.**
 4. **Both `uv` and `pip` are supported.** Observed: `uv sync` (recommended) or
    `python -m venv .venv && pip install .`, with commands prefixed `uv run python N_folder/file.py`.
 5. **Every chapter folder pre-exists on `main`, populated with runnable `.py` files carrying
@@ -1518,8 +1590,10 @@ sample-museum-guide/
 |- 2_voice_agent/                  "The Wheel and the Wave"
 |  |- integrator.py                TODO: compute by physical analogy; `steps` is the boundary
 |  |- sample_rates.py              TODO: hear your own voice fall below the Nyquist rate
-|  |- voice_curator.py             Ch 1's find_exhibit + TODO: the BidiAgent loop, session
-|  |                                     persistence, reconnection past the 8-minute cap
+|  |- voice_curator.py             Ch 1's find_exhibit + TODO: the BidiAgent loop, a custom
+|  |                                     InputStream running pywebrtc-audio AEC so the Curator
+|  |                                     stops hearing itself, session persistence, and
+|  |                                     reconnection past the 8-minute cap
 |  |- certify.py                   carried forward, unchanged
 |  |- cases.py                     Ch 1's cases carried forward + TODO: a 1200 ms threshold
 |  \- bonus_quest.py               optional: tune endpointingSensitivity on a hesitant visitor
@@ -1710,6 +1784,8 @@ Recorded so they are not reopened. Each was decided against a stated alternative
 | **Two-layer naming: creative catalog titles, technical folder names** | 2026-08-04 | Themed folder names with flat titles, which earlier drafts had exactly backwards (§5c) |
 | **Orphaned First Generation material dropped, not archived** | 2026-08-04 | A "Go Deeper appendix" holding EDSAC, the BBC Micro, the 1986 Domesday System's fifteen-year unreadability, and Donald Davies' packet switching — rejected because an appendix is where unused material goes to look used (§13) |
 | **Series renamed to the submitted CFP title** | 2026-10-06 | Keeping *Once Upon a Machine: From Analog Gears to Agentic in Python* and carrying the CFP title as a third naming layer beside §5c and §9 — rejected because the submitted title names the verb and one series title is simpler than three (§15 C1) |
+| **Echo cancellation is a Chapter 2 beat; headphones are a fallback** | 2026-10-06 | Leaving `pywebrtc-audio` as a stream-title mention and keeping R19's headphones as the fix — rejected because the abstract promises AEC publicly, a gallery device has no headphones, and the stream title makes it the headline (§15 C2) |
+| **The microphone moment is delivery, not a beat** | 2026-10-06 | Writing "YOU take the microphone" into Chapter 2 as a seventh engineering beat — rejected per the author: it is the fun around the AEC live coding and an audience question once Chapter 2 runs, so it belongs in §9 and needs no curriculum surface (§15 C3) |
 
 ## 13. Orphan audit — every named thing has a consumer
 
@@ -1766,6 +1842,10 @@ Checked and kept, with the consuming chapter named — so a future reader does n
   and `preflight.py` closes the one gap the audit found.
 - **`stop` and `calculator`** — the two community tools, Chapters 2 and 1, both making the same
   import-don't-write judgement call.
+- **`pywebrtc-audio`** — Chapter 2's echo-cancellation beat (§6), §7's twelfth feature row, §10a's
+  `voice_curator.py` TODO and its dependency floor, R19's rewritten mitigation, and §9's
+  microphone moment. Added 2026-10-06 with its consuming beats named, per the standing requirement
+  below. It is also the third instance of the import-don't-write call, in its least arguable form.
 - **R12 and R34** — the only two verify-before-recording rows left, and both guard live Chapter 2
   content.
 
@@ -1919,8 +1999,8 @@ cancellation**, not with being the voice engine — the correct attribution.
 | ID | Divergence | What it requires |
 |---|---|---|
 | **C1** | **Two titles — resolved 2026-10-06 by renaming the series.** The spec now carries the submitted title; the former *Once Upon a Machine: From Analog Gears to Agentic in Python* is retired and MUST NOT be reintroduced | **Closed.** The submitted title won because it names the **verb** — *wiring* is what a participant does for seven streams, where *from gears to agentic* only names the endpoints. It also keeps the register the series needs: *Machines of Old*, never *Legacy*, which means software debt rather than precious-but-old. §5c's creative catalog titles and §9's bug-naming stream titles are unaffected — those two layers were never in tension with the series title, and the rename collapses what would have been a third layer back into one |
-| **C2** | **`pywebrtc-audio` and echo cancellation are publicly promised and are orphans in this spec.** Verified by grep 2026-10-06: the string appears **once in the entire repository**, in §9's stream-title row. Absent from §5 constraints, §6 Ch 2's engineering beats, §7's eleven-feature audit, §8, and §10a's `2_voice_agent/` tree | **The largest gap, and §13 inverts here.** §13's hard rule would delete an unconsumed name — but the CFP has now promised it to an audience, so the resolution is to *give it a beat*: a Chapter 2 engineering beat and `# TODO:` marker, a row in §7 (feature 12, owner: third-party library, Ch 2, *"the Curator must not hear itself"*), a dependency entry in the root `pyproject.toml` per §10a rule 3, and a file in §10a's tree. **And R19 must be rewritten** — it currently prescribes headphones to prevent the speaker-into-microphone loop, which is the manual workaround AEC replaces. Verified 2026-10-06 on PyPI: `pywebrtc-audio` 0.2.0, Python 3.10–3.14, wheels for macOS arm64, and it ships an `examples/strands_agents_bidi.py` showing `BidiAgent` with live echo cancellation — so the integration surface exists and does not need inventing |
-| **C3** | **The audience-microphone beat lives in §9, not in Chapter 2.** §6 Ch 2's body, its Done-when, its failure mode and §10a's tree never mention it | Same logic §13 applies to Go Deeper links: a beat asserted in a livestream-mapping table and never written into the chapter is an orphan wearing a consumer's clothes. It is now in the public abstract, so it needs a line in Chapter 2's body and in its Done-when. **This matters more for the single-session cut (C5), where there is no §9 to carry it at all** |
+| **C2** | **`pywebrtc-audio` and echo cancellation — resolved 2026-10-06 by giving it a beat.** It was publicly promised in the abstract and the stream title while appearing exactly **once in the entire repository** (§9's stream-title row), absent from §5, §6 Ch 2, §7, §8 and §10a | **Closed.** §13's hard rule would delete an unconsumed name; the CFP inverted that, so the name got consumers instead. Now in: §6 Ch 2's *"then it hears itself"* beat with its `AudioProcessor` snippet, §7 as feature twelve (owner: third-party, which is a precision the chapter states), §10a's `voice_curator.py` TODO plus a `pywebrtc-audio>=0.2` floor under rule 3, R19 rewritten so AEC is the fix and headphones the fallback, R33 raised with AEC marked do-not-trim, §9's microphone moment, and §13's consumed list. Verified 2026-10-06 on PyPI: 0.2.0, Apache-2.0, maintainer `awsarron`, Python 3.10–3.14, macOS arm64 wheels, ships `examples/strands_agents_bidi.py`. **The dependency line itself lands when `2_voice_agent/` is scaffolded** — `pyproject.toml` exists on the chapter branch, not yet on `main` |
+| **C3** | **The audience-microphone beat lived in §9, not Chapter 2 — resolved 2026-10-06, and it collapses into C2.** | **Closed, by the author's own reading: it is not a beat.** It is how the AEC beat is *delivered* — the host tuning `stream_delay_ms` live while the room hears the ghost move, and a volunteer genuinely asking the Curator a question once Chapter 2 runs. So it correctly belongs in §9 and needs no curriculum surface, no TODO and no file. §9's section is retitled accordingly, and it records the one consequence worth knowing: **the microphone moment is the single piece of Chapter 2 that does not survive a cut to a recorded video** — it needs a room |
 | **C4** | **The Evals scoreboard is absent from the abstract.** It names Structured Output, Automated Reasoning and Guardrails, and never names Strands Evals or the Curator's Licence — while §5a and §7 make it structural from Chapter 1, and §5a calls its payoff the series' closing argument | **Accepted as a deliberate abstract-level omission, and stated here so it is not read as a change of design.** A CFP abstract sells six picturable beats; a licence game is the *mechanism* that makes them provable, which is mechanism-beat material (the narrative arc's beat 2), not hook material. §5a is unchanged and the scoreboard still opens in Chapter 1. **But the single-session cut must still show it** — the "change a prompt, a week-one case goes red" moment is the only beat in the series that demonstrates why any of this is trustworthy, and dropping it would leave the session a feature tour |
 | **C5** | **Format: one session versus six chapters and seven streams.** The frontmatter `artifact:` field commits to a livestream series accreting into a Workshop Studio catalog. Nothing in the spec acknowledges a single-session delivery: §9 maps seven streams, §10 lists catalog + repo + streams, and §14 mandates seven stream plans plus a scaffold plan — **no plan covers a conference cut** | The same content now has a second delivery format, and a 45-minute talk cannot carry six chapters. Needs a stated subset: which beats survive, which are demoed pre-recorded, and which are repo-only pointers. **§14's plan list needs a ninth entry** (`session-cfp-cut.md`) or an explicit statement that the conference cut is a presentation concern and deliberately out of the plan set. Leaving it unstated is how a session gets assembled live from six chapters' worth of material |
 
