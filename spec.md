@@ -1887,3 +1887,50 @@ reference repo, not by reasoning from first principles.
 **Order of authority, highest first:** the OUAA repo pattern (§10a) → this spec → a regenerated plan →
 an implementation. Anything derived from a lower tier MUST be regenerated when a higher tier moves.
 
+## 15. CFP alignment audit (2026-10-06)
+
+The series was submitted as a conference talk/workshop under a **different title** and a six-beat
+abstract. Compared line by line against this spec. **The chronology and every chapter beat hold** —
+the abstract is an honest compression of §5b Rule 2's anchor ladder. Five divergences are recorded
+below so the next edit resolves them instead of rediscovering them.
+
+**Submitted title:** *Wiring Machines of Old to Modern Technologies in Python*
+
+### What holds — the abstract's six beats map cleanly
+
+| Abstract beat | Spec | Verdict |
+|---|---|---|
+| 1885, Felt's Comptometer, a `@tool` reading the catalog replaces an invented number | §6 Ch 1 · anchor 1885 | Exact — this is the chapter's founding beat, in the chapter's own words |
+| 1928, Nyquist's sampling limit becomes a spoken conversation with a **speech-to-speech** model | §6 Ch 2 · anchor 1928 | Exact, and correctly says *speech-to-speech* rather than transcribe-reason-synthesise |
+| **YOU (in the audience) take the microphone** | §9 audience transcript game | Promised, but see **C3** — it is not in Chapter 2's body |
+| 1948, a multimodal model reads Turing's handwriting, **Structured Output** returns a validated Pydantic model | §6 Ch 3 · anchor 1948 | Exact, and §7's ownership line survives: Structured Output is credited as the thing constraining the response, not as a Bedrock feature |
+| 1951, the WITCH's eighty hours a week unattended | §6 Ch 4 · anchor 1951 | Exact — chapter title, history and thesis |
+| 2020s, **Automated Reasoning proves a claim instead of judging it**, and **Guardrails** keep the Curator in its lane | §6 Ch 5 · §6 Ch 6 | Exact. *Proves rather than judges* is §5a's Ch 5 row verbatim, and it correctly separates AR (detect, explains itself) from Guardrails (blocks) |
+
+1885 → 1928 → 1948 → 1951 → 2020s → now. **The public abstract commits to the same forward-only
+ladder §5b Rule 2 enforces**, which means a reader who walks the chapters never travels backwards —
+the one structural promise a committee could check against the repo.
+
+Register also holds: *Machines of Old*, not *Legacy*. And `pywebrtc-audio` is credited with **echo
+cancellation**, not with being the voice engine — the correct attribution.
+
+### What diverges
+
+| ID | Divergence | What it requires |
+|---|---|---|
+| **C1** | **Two titles.** Frontmatter says *Once Upon a Machine: From Analog Gears to Agentic in Python*; the submitted title is *Wiring Machines of Old to Modern Technologies in Python* | **A decision, not a fix.** The spec already runs two naming layers deliberately — creative catalog titles (§5c) and bug-naming stream titles (§9). A third layer for the conference circuit is consistent with that precedent, and the submitted title is the better *session* title because it names the verb. Either record it as the CFP layer in §5c, or rename the series. Do not leave two titles unreconciled in the frontmatter |
+| **C2** | **`pywebrtc-audio` and echo cancellation are publicly promised and are orphans in this spec.** Verified by grep 2026-10-06: the string appears **once in the entire repository**, in §9's stream-title row. Absent from §5 constraints, §6 Ch 2's engineering beats, §7's eleven-feature audit, §8, and §10a's `2_voice_agent/` tree | **The largest gap, and §13 inverts here.** §13's hard rule would delete an unconsumed name — but the CFP has now promised it to an audience, so the resolution is to *give it a beat*: a Chapter 2 engineering beat and `# TODO:` marker, a row in §7 (feature 12, owner: third-party library, Ch 2, *"the Curator must not hear itself"*), a dependency entry in the root `pyproject.toml` per §10a rule 3, and a file in §10a's tree. **And R19 must be rewritten** — it currently prescribes headphones to prevent the speaker-into-microphone loop, which is the manual workaround AEC replaces. Verified 2026-10-06 on PyPI: `pywebrtc-audio` 0.2.0, Python 3.10–3.14, wheels for macOS arm64, and it ships an `examples/strands_agents_bidi.py` showing `BidiAgent` with live echo cancellation — so the integration surface exists and does not need inventing |
+| **C3** | **The audience-microphone beat lives in §9, not in Chapter 2.** §6 Ch 2's body, its Done-when, its failure mode and §10a's tree never mention it | Same logic §13 applies to Go Deeper links: a beat asserted in a livestream-mapping table and never written into the chapter is an orphan wearing a consumer's clothes. It is now in the public abstract, so it needs a line in Chapter 2's body and in its Done-when. **This matters more for the single-session cut (C5), where there is no §9 to carry it at all** |
+| **C4** | **The Evals scoreboard is absent from the abstract.** It names Structured Output, Automated Reasoning and Guardrails, and never names Strands Evals or the Curator's Licence — while §5a and §7 make it structural from Chapter 1, and §5a calls its payoff the series' closing argument | **Accepted as a deliberate abstract-level omission, and stated here so it is not read as a change of design.** A CFP abstract sells six picturable beats; a licence game is the *mechanism* that makes them provable, which is mechanism-beat material (the narrative arc's beat 2), not hook material. §5a is unchanged and the scoreboard still opens in Chapter 1. **But the single-session cut must still show it** — the "change a prompt, a week-one case goes red" moment is the only beat in the series that demonstrates why any of this is trustworthy, and dropping it would leave the session a feature tour |
+| **C5** | **Format: one session versus six chapters and seven streams.** The frontmatter `artifact:` field commits to a livestream series accreting into a Workshop Studio catalog. Nothing in the spec acknowledges a single-session delivery: §9 maps seven streams, §10 lists catalog + repo + streams, and §14 mandates seven stream plans plus a scaffold plan — **no plan covers a conference cut** | The same content now has a second delivery format, and a 45-minute talk cannot carry six chapters. Needs a stated subset: which beats survive, which are demoed pre-recorded, and which are repo-only pointers. **§14's plan list needs a ninth entry** (`session-cfp-cut.md`) or an explicit statement that the conference cut is a presentation concern and deliberately out of the plan set. Leaving it unstated is how a session gets assembled live from six chapters' worth of material |
+
+### Not divergences, recorded so they are not re-flagged
+
+- **The abstract opens at 1885, Chapter 1's era opens at 1804.** The Jacquard loom and the
+  determinism lineage are compressed out of the abstract. The **anchor** is 1885 either way (§5b),
+  so the ladder is intact — the abstract simply starts at the chapter's anchor rather than its era.
+- **Chapter 1's three-model swap is invisible in the abstract**, which shows only the fabrication
+  fix. R15 says the swap must not be cut; it is not cut, merely unmentioned. Same for Chapter 4
+  running as two streams, which is a production fact with no audience-facing meaning.
+- **"Finally back to the 2020s"** reads as a return to the present, not a backwards jump. Rule 2 holds.
+
