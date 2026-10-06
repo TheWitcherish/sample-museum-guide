@@ -1,7 +1,7 @@
 ---
-title: "Once Upon a Machine: From Analog Gears to Agentic in Python"
+title: "Wiring Machines of Old to Modern Technologies in Python"
 date: 2026-07-28
-revised: 2026-09-24
+revised: 2026-10-06
 owner: TheWitcherish
 status: Design approved (see §1a)
 artifact: Livestream series (6 chapters, 7 streams) that accretes into an AWS Workshop
@@ -9,7 +9,7 @@ stack: Python 3.12+ · uv · Strands Agents SDK (strands-agents 1.57.0) · stran
 api_verified: 2026-09-24 against installed packages and strandsagents.com docs
 ---
 
-# Once Upon a Machine: From Analog Gears to Agentic in Python
+# Wiring Machines of Old to Modern Technologies in Python
 
 > **Using this spec as a source? Read §14 first.** Every use of this document as an implementation
 > source **MUST regenerate a per-chapter plan** — eight plans, one per stream plus a scaffold plan —
@@ -1709,7 +1709,7 @@ Recorded so they are not reopened. Each was decided against a stated alternative
 | **Deterministic assertions first, judge models from Chapter 3** | 2026-08-04 | Introducing `OutputEvaluator` in Chapter 1 alongside the model swap — rejected because a flaky judge in episode one costs the audience (R13) |
 | **Two-layer naming: creative catalog titles, technical folder names** | 2026-08-04 | Themed folder names with flat titles, which earlier drafts had exactly backwards (§5c) |
 | **Orphaned First Generation material dropped, not archived** | 2026-08-04 | A "Go Deeper appendix" holding EDSAC, the BBC Micro, the 1986 Domesday System's fifteen-year unreadability, and Donald Davies' packet switching — rejected because an appendix is where unused material goes to look used (§13) |
-| **Every named item must have a chapter that consumes it** | 2026-08-04 | Keeping evocative-but-unconsumed references — the Cray-1, the Difference Engine, player-piano rolls, Worsley's analyser — on the grounds that they cost nothing. They cost the next author's attention (§13) |
+| **Series renamed to the submitted CFP title** | 2026-10-06 | Keeping *Once Upon a Machine: From Analog Gears to Agentic in Python* and carrying the CFP title as a third naming layer beside §5c and §9 — rejected because the submitted title names the verb and one series title is simpler than three (§15 C1) |
 
 ## 13. Orphan audit — every named thing has a consumer
 
@@ -1918,7 +1918,7 @@ cancellation**, not with being the voice engine — the correct attribution.
 
 | ID | Divergence | What it requires |
 |---|---|---|
-| **C1** | **Two titles.** Frontmatter says *Once Upon a Machine: From Analog Gears to Agentic in Python*; the submitted title is *Wiring Machines of Old to Modern Technologies in Python* | **A decision, not a fix.** The spec already runs two naming layers deliberately — creative catalog titles (§5c) and bug-naming stream titles (§9). A third layer for the conference circuit is consistent with that precedent, and the submitted title is the better *session* title because it names the verb. Either record it as the CFP layer in §5c, or rename the series. Do not leave two titles unreconciled in the frontmatter |
+| **C1** | **Two titles — resolved 2026-10-06 by renaming the series.** The spec now carries the submitted title; the former *Once Upon a Machine: From Analog Gears to Agentic in Python* is retired and MUST NOT be reintroduced | **Closed.** The submitted title won because it names the **verb** — *wiring* is what a participant does for seven streams, where *from gears to agentic* only names the endpoints. It also keeps the register the series needs: *Machines of Old*, never *Legacy*, which means software debt rather than precious-but-old. §5c's creative catalog titles and §9's bug-naming stream titles are unaffected — those two layers were never in tension with the series title, and the rename collapses what would have been a third layer back into one |
 | **C2** | **`pywebrtc-audio` and echo cancellation are publicly promised and are orphans in this spec.** Verified by grep 2026-10-06: the string appears **once in the entire repository**, in §9's stream-title row. Absent from §5 constraints, §6 Ch 2's engineering beats, §7's eleven-feature audit, §8, and §10a's `2_voice_agent/` tree | **The largest gap, and §13 inverts here.** §13's hard rule would delete an unconsumed name — but the CFP has now promised it to an audience, so the resolution is to *give it a beat*: a Chapter 2 engineering beat and `# TODO:` marker, a row in §7 (feature 12, owner: third-party library, Ch 2, *"the Curator must not hear itself"*), a dependency entry in the root `pyproject.toml` per §10a rule 3, and a file in §10a's tree. **And R19 must be rewritten** — it currently prescribes headphones to prevent the speaker-into-microphone loop, which is the manual workaround AEC replaces. Verified 2026-10-06 on PyPI: `pywebrtc-audio` 0.2.0, Python 3.10–3.14, wheels for macOS arm64, and it ships an `examples/strands_agents_bidi.py` showing `BidiAgent` with live echo cancellation — so the integration surface exists and does not need inventing |
 | **C3** | **The audience-microphone beat lives in §9, not in Chapter 2.** §6 Ch 2's body, its Done-when, its failure mode and §10a's tree never mention it | Same logic §13 applies to Go Deeper links: a beat asserted in a livestream-mapping table and never written into the chapter is an orphan wearing a consumer's clothes. It is now in the public abstract, so it needs a line in Chapter 2's body and in its Done-when. **This matters more for the single-session cut (C5), where there is no §9 to carry it at all** |
 | **C4** | **The Evals scoreboard is absent from the abstract.** It names Structured Output, Automated Reasoning and Guardrails, and never names Strands Evals or the Curator's Licence — while §5a and §7 make it structural from Chapter 1, and §5a calls its payoff the series' closing argument | **Accepted as a deliberate abstract-level omission, and stated here so it is not read as a change of design.** A CFP abstract sells six picturable beats; a licence game is the *mechanism* that makes them provable, which is mechanism-beat material (the narrative arc's beat 2), not hook material. §5a is unchanged and the scoreboard still opens in Chapter 1. **But the single-session cut must still show it** — the "change a prompt, a week-one case goes red" moment is the only beat in the series that demonstrates why any of this is trustworthy, and dropping it would leave the session a feature tour |
