@@ -14,7 +14,7 @@ dependencies = [
     # `strands-agents-evals` (docs: strandsagents.com/docs/user-guide/evals-sdk/). The PyPI name
     # `strands-evals` is a TYPOSQUAT (fake "data synchronization" backend) - never use that name.
     "strands-agents-evals",
-    # "strands-agents[bidi]>=1.44",  # Chapter 2 (voice) will add this floor per R17 - not needed for Ch1
+    # "strands-agents[bidi-all,bidi-pyaudio]>=1.58.1",  # Chapter 2 (voice): Bidi GA floor per R17 - not needed for Ch1
 ]
 
 [tool.ruff]
