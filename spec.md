@@ -707,20 +707,28 @@ WebSocket state machine — and **Chapter 1's tool drops into the constructor un
 import os
 from typing import Final
 
+from strands import ToolContext, tool
 from strands.bidi.agent import BidiAgent
 from strands.bidi.io import AudioIO
 from strands.bidi.models import BedrockNovaSonicModel
-from strands_tools import stop
 
 DEFAULT_NOVA_SONIC_MODEL_ID: Final[str] = "amazon.nova-2-5-sonic"  # preflight re-verifies live
 NOVA_SONIC_MODEL_ID: Final[str] = os.environ.get("NOVA_SONIC_MODEL_ID", DEFAULT_NOVA_SONIC_MODEL_ID)
+
+
+@tool(context=True)
+def end_visit(tool_context: ToolContext[BidiAgent]) -> str:
+    """End the conversation when the visitor says goodbye or asks to stop."""
+    tool_context.agent.cancel()
+    return "Ending the visit. Thank you for coming."
+
 
 model = BedrockNovaSonicModel(
     model_id=NOVA_SONIC_MODEL_ID,
     region=os.environ.get("AWS_REGION", "us-west-2"),
     voice="tiffany",
 )
-agent = BidiAgent(model=model, tools=[find_exhibit, stop])
+agent = BidiAgent(model=model, tools=[find_exhibit, end_visit])
 audio_io = AudioIO()
 await agent.run(inputs=[audio_io.input()], outputs=[audio_io.output()])
 ```
@@ -733,16 +741,20 @@ that warning, which is worth a sentence on air. `AudioIO`'s output already rende
 transcripts and tool-call names in the terminal, so the separate `ConsoleIO` output is no longer
 needed for the main path; it stays as the no-microphone fallback (R19).
 
-**Open spike, before scaffolding:** the GA docs end a session with a five-line custom tool calling
-`tool_context.agent.cancel()`, and no longer mention `strands_tools.stop`. Confirm `stop` still ends a
-`strands.bidi` session on 1.58+. If it does, keep it — it is the import-don't-write beat. If it does
-not, the five-line tool replaces it and the beat becomes *write-don't-import*, which is a fair lesson
-too, but it is a different lesson and the script must say so.
+**Ending the visit is a tool the participant writes, on the GA API.** A spoken conversation has no
+Ctrl-C, so the visitor ends it by saying so. GA's documented way (BidiAgent docs, fetched
+2026-10-07) is a tool that calls `tool_context.agent.cancel()`; the agent acts on the request once
+the current tool group finishes, which ends `receive()` so the surrounding run can stop. The
+community `strands_tools.stop` is **dropped from this chapter** (decided 2026-10-07): the GA docs no
+longer mention it, and the SDK's own surface is the one that carries a versioning promise.
 
-`stop` is the second community tool of the series and it is there for a reason a text agent never
-needs: a spoken conversation has no Ctrl-C. It is how the visitor ends the session by saying so,
-which is Chapter 1's *import-don't-write* judgement call showing up again in a modality that makes it
-obvious.
+That flips the chapter's judgement call, and it is a better lesson for it: Chapter 1 *wrote*
+`find_exhibit` and *imported* `calculator`; here the participant writes a five-line tool because the
+behaviour is about **this agent's own lifecycle**, which no community package can know. Two lines of
+it are worth reading aloud: `context=True` is how a tool reaches the agent that called it, and the
+`ToolContext[BidiAgent]` annotation is what lets `mypy --strict` check that `cancel()` exists. One
+honest limit, from the same docs: tool completion is currently the **only** cancellation checkpoint,
+so a request to stop waits for any running tool group to finish.
 
 Which makes this line, in the audio configuration, the most quietly loaded line in the workshop:
 
@@ -781,7 +793,7 @@ control; passing an `AudioProcessorConfig` instead exposes the two knobs this ch
 output streams MUST come from the **same** `AudioIO` instance, because the canceller uses the
 agent's own playback as its reference; and processing needs **mono** microphone audio.
 
-**The engine underneath is still `pywebrtc-audio`.** The `strands-agents[bidi-aec]` extra declares
+**The engine underneath is still `pywebrtc-audio`.** The `strands-agents[bidi-all]` extra (and the narrower `bidi-aec`) declares
 `pywebrtc-audio>=0.2.0,<0.3.0` (verified 2026-10-07, PyPI metadata for 1.58.1) — so the abstract's
 credit is exact, and the stream title, **Echo Another Day: Voice Agents with pywebrtc-audio and
 Strands Agents**, names both owners correctly. What changed at GA is *who wires it*: before, the
@@ -820,8 +832,9 @@ object most of the audience has physically held. Radio and the cassette handset 
 **Why this is genuinely 400-level, not a feature tour.** Chapter 1 was synchronous
 request-response. Voice is none of those things:
 
-- **Async throughout.** `asyncio`, concurrent input and output streams, and `agent.stop()` that
-  must be called *after* the receive loop exits, never during.
+- **Async throughout.** `asyncio`, concurrent input and output streams, and a lifecycle owned by
+  scope: entering `async with` opens the model connection, exiting it calls `stop()`, and
+  `agent.cancel()` from inside a tool is how the conversation asks to end itself.
 - **A latency budget that is felt, not measured.** A pause that reads as thoughtful in text reads
   as broken in speech. Tools must return fast or the conversation stalls.
 - **Connections expire, and since GA the SDK handles it — so the lesson is watching it happen.**
@@ -925,9 +938,33 @@ the AWS announcement: improved reasoning, instruction following and tool-calling
 latency, expressive voices in seven languages, controllable turn-taking, voice and text in the same
 session, asynchronous tool calling, and a **256K** context window. Available in `us-east-1`,
 `us-west-2`, `eu-north-1` and `ap-northeast-1`, at the same pricing as Nova 2 Sonic. Requires
-Python 3.12+. Install the narrow extras this chapter uses —
-`strands-agents[bidi,bidi-io,bidi-pyaudio,bidi-aec]` — rather than the announcement's `bidi-all`,
-which also pulls Gemini, OpenAI, A2A, FastAPI and Sphinx dependencies the chapter never touches.
+Python 3.12+. Install `strands-agents[bidi-all,bidi-pyaudio]`, the GA announcement's own line
+(decided 2026-10-07). `bidi-all` pulls Gemini, OpenAI, A2A, FastAPI and Sphinx dependencies the
+main path never touches — deliberately, so that a livestream viewer or a blog reader can switch the
+Curator from Nova 2.5 Sonic to another provider without reinstalling anything. It also already
+carries `pywebrtc-audio` and `numpy`, so echo cancellation needs no separate `bidi-aec` extra;
+`bidi-pyaudio` stays separate because `bidi-all` does not include PyAudio (verified 2026-10-07,
+PyPI metadata for 1.58.1).
+
+**Now you try: swap the voice, keep everything else.** This is the chapter's remix hook, and it is
+what `bidi-all` is installed for. `BidiAgent` is provider-agnostic: replace the model construction
+and the tools, `AudioIO` and the licence cases stay the same.
+
+```python
+from strands.bidi.models import GoogleGeminiLiveModel, OpenAIRealtimeModel
+
+model = OpenAIRealtimeModel(model_id=os.environ["OPENAI_REALTIME_MODEL_ID"])  # reads OPENAI_API_KEY
+model = GoogleGeminiLiveModel(model_id=os.environ["GEMINI_LIVE_MODEL_ID"])     # reads GOOGLE_API_KEY
+```
+
+Model IDs come from the environment with **no default**, because they belong to accounts this
+workshop does not control and they are perishable (R27). Run the same licence cases against each
+one and the scoreboard prices the voice, exactly as Chapter 1 priced the text model. Something
+worth noticing on the way: each provider restarts on its own schedule — Gemini Live caps a
+connection at about ten minutes, so `BidiAgent` restarts it after nine and uses server-side session
+resumption rather than replaying history (Gemini Live docs, fetched 2026-10-07). This is optional
+and off the main path: the Workshop Studio catalog stays Bedrock-only (§10), and these two need
+third-party API keys.
 
 **Real exhibits referenced.** TNMOC's Simulation gallery, and specifically the **PACE TR-28** — a
 real analogue computer the participant can point at after writing fifteen lines that behave like one.
@@ -1411,7 +1448,7 @@ R32 for the accepted cost. **Prompt caching** remains a Go Deeper link only.
 | R13 | Licence runs are LLM-judged, so a correct solution could fail intermittently — unacceptable in a graded game, and now the game starts in episode one | **Strengthened by ordering (2026-08-04).** Chapters 1 and 2 use only deterministic assertions — a tool-name set comparison and a millisecond threshold. Neither can flake. The first judge model does not appear until **Chapter 3**, by which point the participant has seen the scoreboard be right twice and has a baseline for trusting it. The judge is also *audited before it is trusted* (§6 Ch 3): run it against a known-correct page first. Standing rules unchanged — rubric thresholds set tolerantly, judged scores advisory, structural checks binding |
 | R25 | Chapter 4's golden set cannot import cases from earlier chapters — and the CLI gate needs an `experiment.json` nothing authors | **Dissolved by the §10a layout.** Under the *Once Upon Agentic AI* convention chapters never import from each other: each has its own `cases.py`, and Chapter 4 gets earlier cases **copied forward** into its folder. Simpler now than before, because the participant *authors* galleries 1–3's cases in Chapter 4 rather than inheriting them. What survives: asset paths resolve via `Path(__file__).parent`, never the caller's cwd; and `export_experiment.py` still generates `experiment.json` for the CLI gate, with a plain-Python gate as fallback |
 | R29 | Copying code forward into every chapter folder means the same file exists in several places, so a fix applied in one chapter does not propagate | Accepted deliberately — it is what makes each folder a runnable snapshot and lets latecomers start anywhere. Mitigations: `solution` is the single reference implementation and its files retain their `# TODO:` comments; `preflight.py` (deliverable 10) diffs the carried-forward files against it so silent drift is caught; and the duplication is **named on air** so it does not read as sloppiness |
-| R26 | `strands-agents-tools` is a separate distribution whose package and import names differ (`strands_tools`), and it is now a **Chapter 1** dependency rather than a late one | **Resolved by declaration, not pinning** (§10a forbids pins): list `strands-agents-tools` in the root `pyproject.toml` alongside `strands-agents`, and keep an import probe in `preflight.py` (deliverable 10) — `from strands_tools import calculator, stop` must resolve before Stream 1. The risk rose in severity by moving to Chapter 1: a broken import now blocks the first episode, not the sixth |
+| R26 | `strands-agents-tools` is a separate distribution whose package and import names differ (`strands_tools`), and it is now a **Chapter 1** dependency rather than a late one | **Resolved by declaration, not pinning** (§10a forbids pins): list `strands-agents-tools` in the root `pyproject.toml` alongside `strands-agents`, and keep an import probe in `preflight.py` (deliverable 10) — `from strands_tools import calculator` must resolve before Stream 1 (`stop` was dropped from the probe on 2026-10-07 when Chapter 2 moved to `agent.cancel()`). The risk rose in severity by moving to Chapter 1: a broken import now blocks the first episode, not the sixth |
 | R27 | Model IDs written into content go stale fast — the original Sonnet 4.6 baseline became legacy within weeks | Re-baselined to the Claude 5 family, verified ACTIVE in `us-west-2`. **`preflight.py` (deliverable 10) re-verifies every written model ID against the live account before each stream** — this row previously pointed at "Task 0," a step defined only in the superseded plan documents, which is a dead reference the 2026-08-04 orphan audit caught (§13); treat every written ID as perishable |
 | R14 | Every chapter depends on `strands-agents-evals` from Chapter 1 — and now it is *taught* from Chapter 1 too, so a breaking release breaks the first episode | Do **not** pin (§10a). Instead: (1) the API surface taught in Chapters 1–3 is deliberately the **smallest and most stable** in the SDK — `Case`, `Experiment`, `ToolCalled`, `OutputEvaluator` — while trace/chaos/simulator/red-team APIs stay in the churn-prone tier from Chapter 4 onward; (2) `certify.py` is a thin runner carried into every folder, so a break is a one-file fix repeated mechanically; (3) the import probe in `preflight.py` covers `strands_evals` before Stream 1, alongside `strands_tools` (R26) — and the dependency MUST be named `strands-agents-evals`: the PyPI name **`strands-evals` is a typosquat** (a fake "data synchronization" package, found 2026-09-24) that a participant typing the import name would install; (4) fix forward on the rolling `solution` branch, then carry the fix into each affected chapter folder |
 | R15 | **Chapter 1 overload** — the agent, a custom tool, the community tools package, the three-model swap, *and* now the scoreboard | The five serve one sentence (§5b Rule 1) and one motivating beat: the Curator fabricates → a tool fixes it → a suite proves the fix held → a different model changes the price of getting it right. The scoreboard is not a fifth topic; **it is what makes the model swap a decision instead of a preference**, so cutting it would leave the chapter weaker, not lighter. Mitigation if the stream runs long: the community-tools reveal collapses to a single line and a Go Deeper link, since it is the one separable piece. **Do not cut the model swap and do not cut the case** — between them they are the concept |
@@ -1422,7 +1459,7 @@ R32 for the accepted cost. **Prompt caching** remains a Go Deeper link only.
 | R24 | Automated Reasoning is **English (US) only**, which conflicts with Nova 2.5 Sonic's multilingual voices (seven languages) (§6 Ch 2) | State it plainly when it arises. A visitor who addresses the Curator in French gets a French answer that **Automated Reasoning will not validate** — so Chapter 5's proof layer silently covers less of the product than Chapter 2 built. Name that gap on air; it is the clearest example in the series of two managed features composing imperfectly. *(Reworded 2026-08-04: this row previously cited "Ch 2's remix challenge," which the orphan audit found does not exist anywhere in the spec — §13.)* |
 | R17 | ~~`strands.experimental.bidi` is **experimental**~~ **Resolved 2026-10-07 by Bidi GA.** `strands.bidi` is the stable surface and follows the SDK's versioning and deprecation policy. The residual risk inverts: `strands.experimental.bidi` still imports with a deprecation warning and **is removed in v1.60.0** (verified in the 1.58.1 source), so any pre-GA snippet a participant copies from an older blog breaks soon | Teach only `strands.bidi.*`. Keep the floor `strands-agents>=1.58` with a comment naming Bidi GA as the reason (§10a rule 3). `preflight.py` fails if any chapter file imports `strands.experimental.bidi`. Say once on air what the deprecation warning means if someone in chat hits it |
 | R18 | Guardrails does not cover audio, so a developer who "attaches" a guardrail to the voice agent ships an unguarded product | Teach the transcript-interception path explicitly in Ch 6 (§6). **Spike required** to determine whether `BedrockNovaSonicModel` accepts guardrail config or whether `ApplyGuardrail` must be called on transcript events by hand |
-| R19 | Voice demos fail live for reasons unrelated to code — microphone permissions, audio feedback loops, PortAudio install, device selection — **in week two** | **Rewritten 2026-10-06: the feedback loop is now the chapter's own content, not a stage workaround.** `AudioIO(audio_processor=...)` (WebRTC AEC from `pywebrtc-audio`, built in since Bidi GA) is what stops the speaker-into-microphone loop, so the demo runs on open speakers and the audience can hear both sides. Headphones are demoted to a belt-and-braces fallback if AEC misbehaves on the stream hardware — the GA blog itself keeps them as an option. Still required: rehearse on the exact stream hardware, pre-install PortAudio (`brew install portaudio`), keep a `ConsoleIO`-only fallback ready, Python 3.12+ and the `bidi`, `bidi-io`, `bidi-pyaudio` and `bidi-aec` extras. **Two live risks arrive with AEC:** a `stream_delay_ms` mismatched to the real speaker-buffer delay leaves the echo partly uncancelled (taught as the chapter's second failure mode — it is set in `AudioProcessorConfig`, so each retune is an edit and a restart), and `pywebrtc-audio` is a compiled wheel, so confirm the macOS arm64 wheel installs on the stream machine during rehearsal rather than discovering a source build on air |
+| R19 | Voice demos fail live for reasons unrelated to code — microphone permissions, audio feedback loops, PortAudio install, device selection — **in week two** | **Rewritten 2026-10-06: the feedback loop is now the chapter's own content, not a stage workaround.** `AudioIO(audio_processor=...)` (WebRTC AEC from `pywebrtc-audio`, built in since Bidi GA) is what stops the speaker-into-microphone loop, so the demo runs on open speakers and the audience can hear both sides. Headphones are demoted to a belt-and-braces fallback if AEC misbehaves on the stream hardware — the GA blog itself keeps them as an option. Still required: rehearse on the exact stream hardware, pre-install PortAudio (`brew install portaudio`), keep a `ConsoleIO`-only fallback ready, Python 3.12+ and the `strands-agents[bidi-all,bidi-pyaudio]` extras. **Two live risks arrive with AEC:** a `stream_delay_ms` mismatched to the real speaker-buffer delay leaves the echo partly uncancelled (taught as the chapter's second failure mode — it is set in `AudioProcessorConfig`, so each retune is an edit and a restart), and `pywebrtc-audio` is a compiled wheel, so confirm the macOS arm64 wheel installs on the stream machine during rehearsal rather than discovering a source build on air |
 | R20 | Nova Sonic connections cap at 8 minutes, and history replayed on each connect is truncated to 50 KiB/message, 200 KiB total | **Rewritten 2026-10-07 for Bidi GA.** The cap itself is now SDK behaviour: `BidiAgent` restarts proactively (default 420 s for Nova Sonic) at a turn boundary and replays history — the chapter forces it at 60 s to show it on air rather than building it. What remains taught as the 400-level problem is the **replay truncation**: a long visit silently loses its oldest turns on every reconnect. Make it visible with the restart event and a "what did we talk about first?" question late in a rehearsal session |
 | R36 | **The scripted red may not reproduce.** Chapter 2's licence beat depends on a naive first run missing the 1200 ms threshold. GA `BidiAgent` lets background tools keep running while the model speaks, and Nova 2.5 Sonic advertises lower latency — so a first run may simply be green. **Raised 2026-10-07** | Rehearse the exact first-run code on Nova 2.5 Sonic before Stream 2 and record the measured number. If it is green, do not fake a red: either the beat becomes *"we expected silence and got speech — here is why"* (asynchronous tool calling as the click, threshold still written, case green on arrival), or a deliberately slow `find_exhibit` variant demonstrates the silence. Decide in rehearsal, and write the decision into the chapter plan (§14) |
 | R16 | Ch 3 carries multimodal *and* Structured Output | The two are taught as **one loop**, not two topics — Converse image block → schema-constrained response → validation failure drives retry. Mitigation if the stream runs long: the confidence-representation lesson becomes a side exercise, since it is the one genuinely separable piece |
@@ -1577,9 +1614,10 @@ it needs a room.
    releases of the Strands SDK. If a chapter breaks against a newer release, please open an issue."*
    Floors are used only where a specific API demands one — observed:
    `"strands-agents[a2a]>=1.44"` with an inline comment naming the API that forced it. **Ours needs
-   one floor for the same reason: `"strands-agents[bidi,bidi-io,bidi-pyaudio,bidi-aec]>=1.58"`,
-   commented as Bidi GA (R17).** `pywebrtc-audio` is no longer a direct dependency — the `bidi-aec`
-   extra declares it (`>=0.2.0,<0.3.0`), so the separate `pywebrtc-audio>=0.2` floor recorded on
+   one floor for the same reason: `"strands-agents[bidi-all,bidi-pyaudio]>=1.58"`,
+   commented as Bidi GA (R17).** `bidi-all` is chosen over the narrower extras so the provider-swap
+   remix (§6 Ch 2) works without a reinstall. `pywebrtc-audio` is no longer a direct dependency —
+   `bidi-all` declares it (`>=0.2.0,<0.3.0`), so the separate `pywebrtc-audio>=0.2` floor recorded on
    2026-10-06 is dropped. Adding this floor to `pyproject.toml` is a dependency change and waits for
    the author's explicit go-ahead when `2_voice_agent/` is scaffolded.
 4. **Both `uv` and `pip` are supported.** Observed: `uv sync` (recommended) or
@@ -1847,7 +1885,8 @@ Recorded so they are not reopened. Each was decided against a stated alternative
 | **Echo cancellation is a Chapter 2 beat; headphones are a fallback** | 2026-10-06 | Leaving `pywebrtc-audio` as a stream-title mention and keeping R19's headphones as the fix — rejected because the abstract promises AEC publicly, a gallery device has no headphones, and the stream title makes it the headline (§15 C2) |
 | **The microphone moment is delivery, not a beat** | 2026-10-06 | Writing "YOU take the microphone" into Chapter 2 as a seventh engineering beat — rejected per the author: it is the fun around the AEC live coding and an audience question once Chapter 2 runs, so it belongs in §9 and needs no curriculum surface (§15 C3) |
 | **Chapter 2 rebuilt on Bidi GA and Nova 2.5 Sonic** | 2026-10-07 | Keeping the pre-GA design — hand-wired `pywebrtc-audio` in a custom `InputStream`, hand-built reconnection with `FileSessionManager`, `strands.experimental.bidi` imports, Nova 2 Sonic — rejected because GA ships all three as SDK behaviour, the experimental path is removed in v1.60.0, and teaching a workaround the SDK has already absorbed is scope the audience pays for (§15 C6) |
-| **Bidi extras, not `bidi-all`** | 2026-10-07 | Copying the announcement's `strands-agents[bidi-all,bidi-pyaudio]` — rejected because `bidi-all` also installs Gemini, OpenAI, A2A, FastAPI and Sphinx dependencies Chapter 2 never uses; `bidi,bidi-io,bidi-pyaudio,bidi-aec` is the exact set |
+| **`bidi-all`, not the narrow extras** | 2026-10-07 | The narrow set `bidi,bidi-io,bidi-pyaudio,bidi-aec`, chosen earlier the same day for having no unused packages — reversed by the author: `bidi-all` installs Gemini, OpenAI, A2A, FastAPI and Sphinx dependencies Chapter 2's main path never uses, and that is deliberate, so a livestream viewer or blog reader can swap Nova 2.5 Sonic for another provider without reinstalling. Its consumer is the chapter's *Now you try* provider swap (§13) |
+| **`agent.cancel()` tool replaces `strands_tools.stop`** | 2026-10-07 | Keeping the community `stop` tool pending a compatibility spike — rejected by the author in favour of GA's documented API: a five-line `end_visit` tool calling `tool_context.agent.cancel()`. The SDK surface carries the versioning promise, and writing the tool teaches `ToolContext` |
 
 ## 13. Orphan audit — every named thing has a consumer
 
@@ -1902,11 +1941,14 @@ Checked and kept, with the consuming chapter named — so a future reader does n
 - **The WITCH** — Chapter 4's title, history and thesis; Chapter 5's `original`-qualifier proof.
 - **Every file in §10a's tree** — each is either a chapter's TODO, provided whole, or carried forward,
   and `preflight.py` closes the one gap the audit found.
-- **`stop` and `calculator`** — the two community tools, Chapters 2 and 1, both making the same
-  import-don't-write judgement call.
+- **`calculator`** — the series' community tool, Chapter 1, making the import-don't-write judgement
+  call. Chapter 2's former second community tool, `stop`, was removed on 2026-10-07 in favour of a
+  written `end_visit` tool on `agent.cancel()`, which makes the same call in the other direction.
+- **`bidi-all`'s third-party providers** (`OpenAIRealtimeModel`, `GoogleGeminiLiveModel`) — consumed
+  by Chapter 2's optional *Now you try* provider swap, which is the reason the extra is installed.
 - **`pywebrtc-audio`** — Chapter 2's echo-cancellation beat (§6), §7's twelfth feature row (as the
   engine under `AudioIO`), R19's mitigation, and §9's microphone moment and stream title. Since Bidi
-  GA (2026-10-07) it arrives through the `bidi-aec` extra rather than as a direct dependency or
+  GA (2026-10-07) it arrives through the `bidi-all` extra rather than as a direct dependency or
   import; it stays named because the abstract and stream title credit it, and the chapter credits it
   on screen. It is also the third instance of the import-don't-write call — here,
   configure-don't-import.
@@ -2067,7 +2109,7 @@ cancellation**, not with being the voice engine — the correct attribution.
 | **C3** | **The audience-microphone beat lived in §9, not Chapter 2 — resolved 2026-10-06, and it collapses into C2.** | **Closed, by the author's own reading: it is not a beat.** It is how the AEC beat is *delivered* — the host tuning `stream_delay_ms` live while the room hears the ghost move, and a volunteer genuinely asking the Curator a question once Chapter 2 runs. So it correctly belongs in §9 and needs no curriculum surface, no TODO and no file. §9's section is retitled accordingly, and it records the one consequence worth knowing: **the microphone moment is the single piece of Chapter 2 that does not survive a cut to a recorded video** — it needs a room |
 | **C4** | **The Evals scoreboard is absent from the abstract.** It names Structured Output, Automated Reasoning and Guardrails, and never names Strands Evals or the Curator's Licence — while §5a and §7 make it structural from Chapter 1, and §5a calls its payoff the series' closing argument | **Accepted as a deliberate abstract-level omission, and stated here so it is not read as a change of design.** A CFP abstract sells six picturable beats; a licence game is the *mechanism* that makes them provable, which is mechanism-beat material (the narrative arc's beat 2), not hook material. §5a is unchanged and the scoreboard still opens in Chapter 1. **But the single-session cut must still show it** — the "change a prompt, a week-one case goes red" moment is the only beat in the series that demonstrates why any of this is trustworthy, and dropping it would leave the session a feature tour |
 | **C5** | **Format: one session versus six chapters and seven streams.** The frontmatter `artifact:` field commits to a livestream series accreting into a Workshop Studio catalog. Nothing in the spec acknowledges a single-session delivery: §9 maps seven streams, §10 lists catalog + repo + streams, and §14 mandates seven stream plans plus a scaffold plan — **no plan covers a conference cut** | The same content now has a second delivery format, and a 45-minute talk cannot carry six chapters. Needs a stated subset: which beats survive, which are demoed pre-recorded, and which are repo-only pointers. **§14's plan list needs a ninth entry** (`session-cfp-cut.md`) or an explicit statement that the conference cut is a presentation concern and deliberately out of the plan set. Leaving it unstated is how a session gets assembled live from six chapters' worth of material |
-| **C6** | **Bidi Agents GA (strands-agents 1.58, 2026-10-05) and Nova 2.5 Sonic (GA 2026-10-05) changed Chapter 2's ground — reviewed 2026-10-07.** Sources: the Strands blog *Bidi Agents now GA*, the AWS What's New post for Nova 2.5 Sonic, the Bidi docs (agent, Nova Sonic model, I/O, session management, observability), and the `strands-agents` 1.58.1 wheel source and PyPI metadata | **Closed by rewriting §6 Ch 2, §7, R17, R19, R20, R24, R33, §9, §10, §10a, §12 and §13.** What changed and where it landed: (1) imports move to `strands.bidi`; `strands.experimental.bidi` is removed in v1.60.0 (R17 resolved, preflight guard added); (2) echo cancellation is one argument, `AudioIO(audio_processor=...)`, with `pywebrtc-audio` underneath via the `bidi-aec` extra — the custom `InputStream` beat is **deleted**; (3) connection renewal is SDK behaviour (default restart at 420 s) — the hand-built reconnection beat becomes a forced 60 s restart shown on air, and the remaining lesson is the 200 KiB history replay limit (R20); `FileSessionManager` is replaced by `SnapshotSessionManager` as a Go Deeper link; (4) `BidiAgent` has no metrics summary object, so the latency case times first audio itself and names `gen_ai.server.time_to_first_audio` as the Chapter 4 foreshadow; (5) the model is Nova 2.5 Sonic, `amazon.nova-2-5-sonic` from the Strands docs — **not yet confirmed against the live account**, preflight re-verifies; context window is now stated as 256K per the announcement, replacing the 1M figure recorded for Nova 2; (6) the scripted red latency run is now a risk (R36). **Not adopted:** GA's harness-agent delegation (second agent, outside Rule 1). **Open spikes:** `strands_tools.stop` against `strands.bidi`; the transcript event names on 1.58; Guardrails integration on Nova 2.5 Sonic (Ch 6) |
+| **C6** | **Bidi Agents GA (strands-agents 1.58, 2026-10-05) and Nova 2.5 Sonic (GA 2026-10-05) changed Chapter 2's ground — reviewed 2026-10-07.** Sources: the Strands blog *Bidi Agents now GA*, the AWS What's New post for Nova 2.5 Sonic, the Bidi docs (agent, Nova Sonic model, I/O, session management, observability), and the `strands-agents` 1.58.1 wheel source and PyPI metadata | **Closed by rewriting §6 Ch 2, §7, R17, R19, R20, R24, R33, §9, §10, §10a, §12 and §13.** What changed and where it landed: (1) imports move to `strands.bidi`; `strands.experimental.bidi` is removed in v1.60.0 (R17 resolved, preflight guard added); (2) echo cancellation is one argument, `AudioIO(audio_processor=...)`, with `pywebrtc-audio` underneath via the `bidi-aec` extra — the custom `InputStream` beat is **deleted**; (3) connection renewal is SDK behaviour (default restart at 420 s) — the hand-built reconnection beat becomes a forced 60 s restart shown on air, and the remaining lesson is the 200 KiB history replay limit (R20); `FileSessionManager` is replaced by `SnapshotSessionManager` as a Go Deeper link; (4) `BidiAgent` has no metrics summary object, so the latency case times first audio itself and names `gen_ai.server.time_to_first_audio` as the Chapter 4 foreshadow; (5) the model is Nova 2.5 Sonic, `amazon.nova-2-5-sonic` from the Strands docs — **not yet confirmed against the live account**, preflight re-verifies; context window is now stated as 256K per the announcement, replacing the 1M figure recorded for Nova 2; (6) the scripted red latency run is now a risk (R36). **Not adopted:** GA's harness-agent delegation (second agent, outside Rule 1). **Open spikes:** the transcript event names on 1.58; Guardrails integration on Nova 2.5 Sonic (Ch 6). **Amended the same day by the author:** `strands_tools.stop` replaced by an `agent.cancel()` tool, and `bidi-all` adopted for the provider-swap remix (§12) |
 
 ### The abstract, re-checked against Bidi GA (2026-10-07)
 
