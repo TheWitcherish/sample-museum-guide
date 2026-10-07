@@ -5,7 +5,7 @@ revised: 2026-10-07
 owner: TheWitcherish
 status: Design approved (see §1a)
 artifact: Livestream series (6 chapters, 7 streams) that accretes into an AWS Workshop
-stack: Python 3.12+ · uv · Strands Agents SDK (strands-agents 1.57.0; Chapter 2 needs >=1.58 for Bidi GA) · strands-agents-tools 0.8.9 · Strands Evals SDK (strands-agents-evals 1.4.0) · Amazon Bedrock (Nova 2.5 Sonic for Chapter 2)
+stack: Python 3.12+ · uv · Strands Agents SDK (strands-agents 1.57.0; Chapter 2 needs strands-agents[bidi-all,bidi-pyaudio]>=1.58.1 for Bidi GA) · strands-agents-tools 0.8.9 · Strands Evals SDK (strands-agents-evals 1.4.0) · Amazon Bedrock (Nova 2.5 Sonic for Chapter 2)
 api_verified: 2026-09-24 against installed packages and strandsagents.com docs; Chapter 2 re-verified 2026-10-07 against strands-agents 1.58.1 source and the Bidi GA docs (§15 C6)
 ---
 
@@ -938,8 +938,9 @@ the AWS announcement: improved reasoning, instruction following and tool-calling
 latency, expressive voices in seven languages, controllable turn-taking, voice and text in the same
 session, asynchronous tool calling, and a **256K** context window. Available in `us-east-1`,
 `us-west-2`, `eu-north-1` and `ap-northeast-1`, at the same pricing as Nova 2 Sonic. Requires
-Python 3.12+. Install `strands-agents[bidi-all,bidi-pyaudio]`, the GA announcement's own line
-(decided 2026-10-07). `bidi-all` pulls Gemini, OpenAI, A2A, FastAPI and Sphinx dependencies the
+Python 3.12+. Install `strands-agents[bidi-all,bidi-pyaudio]>=1.58.1`, the GA announcement's own
+line (decided 2026-10-07). **1.58.1 is the version the `bidi-all` extra was verified against** —
+latest on PyPI, no published vulnerabilities (PyPI JSON, fetched 2026-10-07). `bidi-all` pulls Gemini, OpenAI, A2A, FastAPI and Sphinx dependencies the
 main path never touches — deliberately, so that a livestream viewer or a blog reader can switch the
 Curator from Nova 2.5 Sonic to another provider without reinstalling anything. It also already
 carries `pywebrtc-audio` and `numpy`, so echo cancellation needs no separate `bidi-aec` extra;
@@ -1457,7 +1458,7 @@ R32 for the accepted cost. **Prompt caching** remains a Go Deeper link only.
 | R22 | Automated Reasoning has **no streaming support**, so it cannot sit inline in Ch 2's voice stream or Ch 6's streaming UI | Taught as an architectural constraint, not hidden: it is a post-hoc verification layer. Ch 6 must show where in the request path each control lives — AR after a complete response, Guardrails inline |
 | R23 | A participant may over-trust a `VALID` result | The scope limitation is a **required teaching beat**, using the AWS docs' own fake-doctor's-note example. A proof is only as good as its axioms; verification moves the trust question from the model to the policy rather than eliminating it |
 | R24 | Automated Reasoning is **English (US) only**, which conflicts with Nova 2.5 Sonic's multilingual voices (seven languages) (§6 Ch 2) | State it plainly when it arises. A visitor who addresses the Curator in French gets a French answer that **Automated Reasoning will not validate** — so Chapter 5's proof layer silently covers less of the product than Chapter 2 built. Name that gap on air; it is the clearest example in the series of two managed features composing imperfectly. *(Reworded 2026-08-04: this row previously cited "Ch 2's remix challenge," which the orphan audit found does not exist anywhere in the spec — §13.)* |
-| R17 | ~~`strands.experimental.bidi` is **experimental**~~ **Resolved 2026-10-07 by Bidi GA.** `strands.bidi` is the stable surface and follows the SDK's versioning and deprecation policy. The residual risk inverts: `strands.experimental.bidi` still imports with a deprecation warning and **is removed in v1.60.0** (verified in the 1.58.1 source), so any pre-GA snippet a participant copies from an older blog breaks soon | Teach only `strands.bidi.*`. Keep the floor `strands-agents>=1.58` with a comment naming Bidi GA as the reason (§10a rule 3). `preflight.py` fails if any chapter file imports `strands.experimental.bidi`. Say once on air what the deprecation warning means if someone in chat hits it |
+| R17 | ~~`strands.experimental.bidi` is **experimental**~~ **Resolved 2026-10-07 by Bidi GA.** `strands.bidi` is the stable surface and follows the SDK's versioning and deprecation policy. The residual risk inverts: `strands.experimental.bidi` still imports with a deprecation warning and **is removed in v1.60.0** (verified in the 1.58.1 source), so any pre-GA snippet a participant copies from an older blog breaks soon | Teach only `strands.bidi.*`. Keep the floor `strands-agents[bidi-all,bidi-pyaudio]>=1.58.1` with a comment naming Bidi GA as the reason (§10a rule 3). `preflight.py` fails if any chapter file imports `strands.experimental.bidi`. Say once on air what the deprecation warning means if someone in chat hits it |
 | R18 | Guardrails does not cover audio, so a developer who "attaches" a guardrail to the voice agent ships an unguarded product | Teach the transcript-interception path explicitly in Ch 6 (§6). **Spike required** to determine whether `BedrockNovaSonicModel` accepts guardrail config or whether `ApplyGuardrail` must be called on transcript events by hand |
 | R19 | Voice demos fail live for reasons unrelated to code — microphone permissions, audio feedback loops, PortAudio install, device selection — **in week two** | **Rewritten 2026-10-06: the feedback loop is now the chapter's own content, not a stage workaround.** `AudioIO(audio_processor=...)` (WebRTC AEC from `pywebrtc-audio`, built in since Bidi GA) is what stops the speaker-into-microphone loop, so the demo runs on open speakers and the audience can hear both sides. Headphones are demoted to a belt-and-braces fallback if AEC misbehaves on the stream hardware — the GA blog itself keeps them as an option. Still required: rehearse on the exact stream hardware, pre-install PortAudio (`brew install portaudio`), keep a `ConsoleIO`-only fallback ready, Python 3.12+ and the `strands-agents[bidi-all,bidi-pyaudio]` extras. **Two live risks arrive with AEC:** a `stream_delay_ms` mismatched to the real speaker-buffer delay leaves the echo partly uncancelled (taught as the chapter's second failure mode — it is set in `AudioProcessorConfig`, so each retune is an edit and a restart), and `pywebrtc-audio` is a compiled wheel, so confirm the macOS arm64 wheel installs on the stream machine during rehearsal rather than discovering a source build on air |
 | R20 | Nova Sonic connections cap at 8 minutes, and history replayed on each connect is truncated to 50 KiB/message, 200 KiB total | **Rewritten 2026-10-07 for Bidi GA.** The cap itself is now SDK behaviour: `BidiAgent` restarts proactively (default 420 s for Nova Sonic) at a turn boundary and replays history — the chapter forces it at 60 s to show it on air rather than building it. What remains taught as the 400-level problem is the **replay truncation**: a long visit silently loses its oldest turns on every reconnect. Make it visible with the restart event and a "what did we talk about first?" question late in a rehearsal session |
@@ -1614,12 +1615,14 @@ it needs a room.
    releases of the Strands SDK. If a chapter breaks against a newer release, please open an issue."*
    Floors are used only where a specific API demands one — observed:
    `"strands-agents[a2a]>=1.44"` with an inline comment naming the API that forced it. **Ours needs
-   one floor for the same reason: `"strands-agents[bidi-all,bidi-pyaudio]>=1.58"`,
-   commented as Bidi GA (R17).** `bidi-all` is chosen over the narrower extras so the provider-swap
+   one floor for the same reason: `"strands-agents[bidi-all,bidi-pyaudio]>=1.58.1"`,
+   commented as Bidi GA (R17).** 1.58.1 is the release whose `bidi-all` metadata was verified
+   (2026-10-07), so the floor names it rather than the bare `1.58`. `bidi-all` is chosen over the narrower extras so the provider-swap
    remix (§6 Ch 2) works without a reinstall. `pywebrtc-audio` is no longer a direct dependency —
    `bidi-all` declares it (`>=0.2.0,<0.3.0`), so the separate `pywebrtc-audio>=0.2` floor recorded on
-   2026-10-06 is dropped. Adding this floor to `pyproject.toml` is a dependency change and waits for
-   the author's explicit go-ahead when `2_voice_agent/` is scaffolded.
+   2026-10-06 is dropped. The author gave the go-ahead on 2026-10-07: the floor lands in
+   `pyproject.toml` (as the commented Chapter 2 line on the Chapter 1 branch, live on the Chapter 2
+   branch) when `2_voice_agent/` is scaffolded.
 4. **Both `uv` and `pip` are supported.** Observed: `uv sync` (recommended) or
    `python -m venv .venv && pip install .`, with commands prefixed `uv run python N_folder/file.py`.
 5. **Every chapter folder pre-exists on `main`, populated with runnable `.py` files carrying
