@@ -8,13 +8,14 @@ requires-python = ">=3.12"
 dependencies = [
     # Deliberately unpinned, no lockfile: uv sync installs the latest compatible Strands releases
     # (spec 10a rule 3). Add a floor ONLY where a specific API demands one, with a comment naming it.
-    "strands-agents",
+    # >=1.61.0: the release every chapter is built and verified on (2026-10-15).
+    "strands-agents>=1.61.0",
     "strands-agents-tools",  # community tools: Chapter 1 imports `calculator` from here
     # The scoreboard: Case / Experiment / TrajectoryEvaluator. The correct distribution is
     # `strands-agents-evals` (docs: strandsagents.com/docs/user-guide/evals-sdk/). The PyPI name
     # `strands-evals` is a TYPOSQUAT (fake "data synchronization" backend) - never use that name.
     "strands-agents-evals",
-    # "strands-agents[bidi-all,bidi-pyaudio]>=1.58.1",  # Chapter 2 (voice): Bidi GA floor per R17 - not needed for Ch1
+    # "strands-agents[bidi-all,bidi-pyaudio]>=1.61.0",  # Chapter 2 (voice): Bidi GA floor per R17 - not needed for Ch1
 ]
 
 [tool.ruff]
