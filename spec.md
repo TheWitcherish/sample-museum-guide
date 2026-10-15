@@ -5,7 +5,7 @@ revised: 2026-10-07
 owner: TheWitcherish
 status: Design approved (see §1a)
 artifact: Livestream series (6 chapters, 7 streams) that accretes into an AWS Workshop
-stack: Python 3.12+ · uv · Strands Agents SDK (strands-agents>=1.61.0 on every chapter; Chapter 2 adds the extras strands-agents[bidi-all,bidi-pyaudio]>=1.61.0 for Bidi GA) · strands-agents-tools 0.8.9 · Strands Evals SDK (strands-agents-evals 1.4.0) · Amazon Bedrock (Nova 2.5 Sonic for Chapter 2)
+stack: Python 3.12+ · uv · Strands Agents SDK (strands-agents>=1.61.0 on every chapter; Chapter 2 adds the extras strands-agents[bidi-all,bidi-pyaudio]>=1.61.0 for Bidi GA) · strands-agents-tools 0.8.9 · Strands Evals SDK (strands-agents-evals>=1.6.0, the first release allowing rich 15, R17) · Amazon Bedrock (Nova 2.5 Sonic for Chapter 2)
 api_verified: 2026-09-24 against installed packages and strandsagents.com docs; Chapter 2 re-verified 2026-10-07 against strands-agents 1.58.1 source and the Bidi GA docs (§15 C6)
 ---
 
