@@ -1235,6 +1235,14 @@ version attached to a guardrail, then integrate at runtime.
 Findings are a union — exactly one of `valid`, `invalid`, `satisfiable`, `impossible`,
 `translationAmbiguous`, `tooComplex`, `noTranslations`.
 
+**Proof where the rule is precise, judgment where it is not.** AWS's *Trust in Depth* post
+(Shawn Bice, 2026-10-15) states the sorting rule this chapter needs: *"Only a manager can approve
+access" can be proven. "Keep a friendly tone" cannot.* In the museum: *"the Comptometer was
+patented before the WITCH ran"* is provable, so it goes to the policy; *"explain the WITCH warmly"*
+is not, so it stays with Chapter 3's judge. The two chapters are not rivals — they split the work,
+and the participant decides which claim goes where. This is the abstract's *"proves a claim instead
+of judging it"*, and it is the reason the series keeps both.
+
 **Why the museum genuinely needs this.** The catalog is a factual record, and factual records
 have provable structure: chronology has orderings (the WITCH was operational April 1951, the
 Comptometer patented 1887 — so "the Comptometer came first" is derivable), classification is
@@ -1282,6 +1290,11 @@ verification moves the trust question rather than eliminating it — from "do I 
 to "do I trust my policy?" Which is Chapter 3's rubric lesson, one level deeper: *do I trust my
 judge?* became *do I trust my axioms?*
 
+The same post says it in one line worth reading on air: a proof *"is only as good as the rules and
+assumptions behind it, which is why the hardest work comes before the agent runs."* So the stream's
+minutes go to the **policy** — the source document and its fidelity report — not to the runtime
+call, which is a few lines.
+
 **Constraints that shape the architecture, not footnotes.**
 - **No streaming support.** Complete responses only. So Automated Reasoning cannot sit inline in
   Chapter 2's voice stream or Chapter 6's streaming UI — it is a post-hoc verification layer.
@@ -1291,8 +1304,18 @@ judge?* became *do I trust my axioms?*
 - **English (US) only** — worth noting against Chapter 2's multilingual voice.
 - **No prompt-injection protection, no off-topic detection.** Those need content filters and
   topic policies, which is Chapter 6. The features are complementary, and saying so prevents a
-  participant from over-trusting any single control.
+  participant from over-trusting any single control. Nor does it read encoded text: if any part
+  of a submission is Base64, hex or percent-encoded, the whole submission may go unevaluated
+  (Bedrock user guide, re-verified 2026-10-16) — one more reason Chapter 6's red-team runs
+  against content filters, not against this policy.
 - Source documents: 5 MB and 50,000 characters maximum. Validation adds latency.
+- **Words, not actions — and the chapter stays there.** The *Trust in Depth* post also applies
+  automated reasoning to what an agent *does*: Policy in AgentCore checks tool-call policies for
+  gaps and contradictions and enforces them at AgentCore Gateway, with temporal policies on top.
+  **Not adopted.** It needs AgentCore Gateway (§5 keeps AgentCore narrative, never required), and
+  it is a second concept beside proving a response (§5b Rule 1). It is one *Go Deeper* link, and
+  the contrast is one sentence on air: Guardrails checks what the Curator **says**; AgentCore
+  Policy checks what an agent **does**.
 
 **Licence — one new check: a proof, not an opinion.** Chapter 3's judge returns a *graded
 verdict*; this chapter's policy returns `invalid` **and names the rule that was contradicted**. The
@@ -1303,6 +1326,10 @@ disagree with itself between runs.
 The headline case is the *original* one: the Curator drops the word from "the oldest original working
 digital computer," the policy proves the claim false, cites the qualifier rule, and the rewriting loop
 produces a response that validates. Gallery 5 goes green on evidence no model was asked to weigh in on.
+
+**Land small.** The post closes on *"start with one agent, one workflow, and one boundary you can
+prove."* That is this chapter's scope, exactly: one Curator, one rewriting loop, one rule — the word
+*original*. Do not grow the policy on air to look thorough; one proven boundary is the visible win.
 
 ---
 
@@ -1902,6 +1929,7 @@ Recorded so they are not reopened. Each was decided against a stated alternative
 | **Chapter 2 rebuilt on Bidi GA and Nova 2.5 Sonic** | 2026-10-07 | Keeping the pre-GA design — hand-wired `pywebrtc-audio` in a custom `InputStream`, hand-built reconnection with `FileSessionManager`, `strands.experimental.bidi` imports, Nova 2 Sonic — rejected because GA ships all three as SDK behaviour, the experimental path is deprecated with removal announced for v1.60.0 (still importable on 1.61.0, re-verified 2026-10-15), and teaching a workaround the SDK has already absorbed is scope the audience pays for (§15 C6) |
 | **`bidi-all`, not the narrow extras** | 2026-10-07 | The narrow set `bidi,bidi-io,bidi-pyaudio,bidi-aec`, chosen earlier the same day for having no unused packages — reversed by the author: `bidi-all` installs Gemini, OpenAI, A2A, FastAPI and Sphinx dependencies Chapter 2's main path never uses, and that is deliberate, so a livestream viewer or blog reader can swap Nova 2.5 Sonic for another provider without reinstalling. Its consumer is the chapter's *Now you try* provider swap (§13) |
 | **`agent.cancel()` tool replaces `strands_tools.stop`** | 2026-10-07 | Keeping the community `stop` tool pending a compatibility spike — rejected by the author in favour of GA's documented API: a five-line `end_visit` tool calling `tool_context.agent.cancel()`. The SDK surface carries the versioning promise, and writing the tool teaches `ToolContext` |
+| **Chapter 5 stays on proving what the Curator says** | 2026-10-16 | Adding Policy in AgentCore (automated reasoning on tool calls, enforced at AgentCore Gateway, temporal policies) after AWS's *Trust in Depth* post — rejected under KISS: it needs Gateway infrastructure §5 never requires, and it is a second concept in a one-concept chapter (§5b). The post's other layers (Agent Registry, Strands Box, CloudWatch Omni) are likewise not adopted. Kept from the post: the precise-versus-judgment split, the "only as good as its rules" line, and the one-provable-boundary landing |
 
 ## 13. Orphan audit — every named thing has a consumer
 
