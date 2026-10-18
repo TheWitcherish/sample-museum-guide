@@ -1,5 +1,5 @@
 [project]
-name = "sample-museum-guide"
+name = "sample-wiring-machines-of-old"
 version = "0.1.0"
 description = "The Curator: an agentic guide for a computing-heritage museum, built one gallery at a time. Workshop sample repo."
 readme = "README.md"
