@@ -1705,7 +1705,7 @@ it needs a room.
 repo's first chapter is a single file. Do not add a file to a folder for symmetry.
 
 ```text
-sample-museum-guide/
+sample-wiring-machines-of-old/
 |- README.md                       Setup + the six-gallery adventure map
 |- pyproject.toml                  SINGLE source of dependency truth. Unpinned, no lockfile.
 |- .python-version                 3.12+ (Nova Sonic's bidi dependency requires it)
